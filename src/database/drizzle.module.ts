@@ -11,10 +11,9 @@ import { Pool } from 'pg';
       provide: PG_CONNECTION,
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) => {
-        const connectionString = configService.get<'string'>('DATABASE_URL');
+        const connectionString = configService.get<string>('DATABASE_URL');
         const pool = new Pool({
           connectionString,
-          ssl: true,
         });
         return drizzle(pool, { schema });
       },

@@ -1,6 +1,5 @@
 import { relations } from 'drizzle-orm';
 import {
-  char,
   pgEnum,
   pgTable,
   serial,
@@ -19,7 +18,7 @@ export const Role = pgEnum('role', [
 
 export const users = pgTable('users', {
   id: serial('id').primaryKey(),
-  username: char('username', { length: 24 }).unique(),
+  username: text('username').unique(),
   email: text('email').unique(),
   password: text('password'),
   role: Role('role').default('USER'),
@@ -33,7 +32,7 @@ export const usersRelations = relations(users, ({ many }) => ({
 
 export const posts = pgTable('posts', {
   id: serial('id').primaryKey(),
-  title: char('title'),
+  title: text('title'),
   content: text('content'),
   authorId: integer('author_id'),
   published: boolean('published').default(false),

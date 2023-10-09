@@ -3,13 +3,18 @@ import { migrate } from 'drizzle-orm/node-postgres/migrator';
 import { Pool } from 'pg';
 
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
+  connectionString:
+    'postgres://postgres:postgres@localhost:5432/blogpost?sllmode=false',
 });
 const db = drizzle(pool);
 
 const migration = async () => {
   console.log('Migrating...');
-  await migrate(db, { migrationsFolder: 'drizzle' });
+  try {
+    await migrate(db, { migrationsFolder: 'drizzle' });
+  } catch (error) {
+    console.log(error);
+  }
   console.log('Migrate complete!');
   process.exit(0);
 };
