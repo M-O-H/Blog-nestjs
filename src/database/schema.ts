@@ -4,9 +4,10 @@ import {
   pgTable,
   serial,
   text,
-  date,
   integer,
   boolean,
+  varchar,
+  timestamp,
 } from 'drizzle-orm/pg-core';
 
 export const Role = pgEnum('role', [
@@ -18,12 +19,12 @@ export const Role = pgEnum('role', [
 
 export const users = pgTable('users', {
   id: serial('id').primaryKey(),
-  username: text('username').unique(),
-  email: text('email').unique(),
-  password: text('password'),
+  username: varchar('username', { length: 50 }).unique().notNull(),
+  email: varchar('email', { length: 255 }).unique().notNull(),
+  password: text('password').notNull(),
   role: Role('role').default('USER'),
-  createdAt: date('updatedAt').defaultNow(),
-  updatedAt: date('updatedAt').defaultNow(),
+  createdAt: timestamp('createdAt', { mode: 'string' }).defaultNow(),
+  updatedAt: timestamp('updatedAt', { mode: 'string' }).defaultNow(),
 });
 
 export const usersRelations = relations(users, ({ many }) => ({
@@ -32,13 +33,15 @@ export const usersRelations = relations(users, ({ many }) => ({
 
 export const posts = pgTable('posts', {
   id: serial('id').primaryKey(),
-  title: text('title'),
-  content: text('content'),
-  authorId: integer('author_id'),
+  title: varchar('title', { length: 70 }).notNull(),
+  content: varchar('content', { length: 250 }).notNull(),
+  authorId: integer('author_id').notNull(),
   published: boolean('published').default(false),
+  rate: integer('rate').default(0),
   cover: text('cover').default('../../assets/covers/sdc.png'),
-  createdAt: date('createdAt').defaultNow(),
-  updatedAt: date('updatedAt').defaultNow(),
+  createdAt: timestamp('createdAt', { mode: 'string' }).defaultNow(),
+  updatedAt: timestamp('updatedAt', { mode: 'string' }).defaultNow(),
+  tags: text('tags').default('[]'),
 });
 
 export const postsRelations = relations(posts, ({ one }) => ({

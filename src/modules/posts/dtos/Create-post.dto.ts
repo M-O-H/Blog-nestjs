@@ -1,10 +1,9 @@
-import { IsBoolean, IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsOptional, IsString } from 'class-validator';
 
 export class CreatePostDto {
-  @IsNumber()
-  id: number;
   @IsString()
   title: string;
+
   @IsString()
   content: string;
 
@@ -12,10 +11,10 @@ export class CreatePostDto {
   @IsOptional()
   published: boolean;
 
-  @IsNumber()
-  authorId: number;
-
   @IsString()
   @IsOptional()
   cover: string;
+
+  @IsString({ each: true })
+  tags: string[];
 }

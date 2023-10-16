@@ -8,6 +8,10 @@ import {
 @Injectable()
 export class ParseIntPipe implements PipeTransform {
   transform(value: any, metadata: ArgumentMetadata) {
-    console.log(value)
+    if (metadata.type === 'param' && isNaN(parseInt(value, 10)))
+      throw new BadRequestException(
+        `validation failed. "${value} is not a number"`,
+      );
+    return value;
   }
 }

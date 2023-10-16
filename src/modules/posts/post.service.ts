@@ -23,46 +23,54 @@ export class PostService {
     const title = search.title ? `%${search.title}%` : null;
     if (limit > 10) limit = 10;
     try {
-      const publishedPosts = await this.conn
-        .select()
-        .from(posts)
-        .where(
-          and(
-            eq(posts.published, true),
-            like(posts.title, title || posts.title),
-          ),
-        )
-        .limit(limit)
-        .offset(page)
-        .orderBy(posts.updatedAt);
+      const publishedPosts = await this.conn.query.posts.findMany({
+        where: and(
+          eq(posts.published, true),
+          like(posts.title, title || posts.title),
+        ),
+        limit: limit,
+        offset: page,
+        orderBy: posts.updatedAt,
+        with: { author: true },
+      });
       if (isEmpty(publishedPosts[0]))
         throw new NotFoundException(
           `Post with title:'${search.title}' not exits!`,
         );
+      publishedPosts.map((post) => {
+        delete post.author.password;
+      });
       return publishedPosts;
     } catch (error) {
       throw error;
     }
   }
 
-  async getPost(postId: number): Promise<Post> {
+  async getPost(postId: number): Promise<any> {
     try {
-      const [post] = await this.conn
-        .select()
-        .from(posts)
-        .where(eq(posts.id, postId));
+      const post = await this.conn.query.posts.findFirst({
+        where: eq(posts.id, postId),
+        with: {
+          author: true,
+        },
+        orderBy: posts.id,
+      });
       if (!post) throw new NotFoundException(`Post #${postId} not found`);
+      delete post.author.password;
       return post;
     } catch (error) {
       throw error;
     }
   }
-
-  async createPost(createPost: PostCreateInput): Promise<Post[]> {
+  // not found - post with title exist -
+  async createPost(
+    userId: number,
+    createPost: PostCreateInput,
+  ): Promise<Post[]> {
     try {
       return await this.conn
         .insert(posts)
-        .values(createPost)
+        .values({ authorId: userId, ...createPost })
         .onConflictDoNothing()
         .returning();
     } catch (error) {
@@ -75,21 +83,24 @@ export class PostService {
       const [updatedPost] = await this.conn
         .update(posts)
         .set(updatePost)
-        .where(eq(posts.id, postId))
+        .where(
+          and(eq(posts.authorId, updatePost.authorId), eq(posts.id, postId)),
+        )
         .returning();
+      console.log(updatedPost);
       if (!updatedPost)
-        throw new NotFoundException(`Post with id:#${postId} Not found`);
+        throw new NotFoundException(`Post with id: #${postId} not found`);
       return updatedPost;
     } catch (error) {
       throw error;
     }
   }
 
-  async delete(postId: number): Promise<Post> {
+  async delete(userId: number, postId: number): Promise<Post> {
     try {
       const [deletedPost] = await this.conn
         .delete(posts)
-        .where(eq(posts.id, postId))
+        .where(and(eq(posts.id, postId), eq(posts.authorId, userId)))
         .returning();
       if (!deletedPost)
         throw new NotFoundException(`Post with id:#${postId} Not found`);

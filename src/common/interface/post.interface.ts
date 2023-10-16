@@ -1,21 +1,21 @@
-interface RequiredProps {
+interface PostRequiredProps {
   id: number;
   title: string;
   content: string;
-  authorId: number;
+  authorId?: number;
 }
 
-interface OptionalProps {
+interface PostOptionalProps {
   published: boolean;
   cover: string;
   createdAt: string;
   updatedAt: string;
 }
 
-export interface Post extends RequiredProps, OptionalProps {}
+export interface Post extends PostRequiredProps, PostOptionalProps {}
 
 export interface PostCreateInput
-  extends Omit<RequiredProps, 'id'>,
-    Partial<OptionalProps> {}
+  extends Omit<PostRequiredProps, 'id'>,
+    Partial<PostOptionalProps> {}
 
 export interface PostUpdateInput extends Partial<PostCreateInput> {}
