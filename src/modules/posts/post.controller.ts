@@ -38,10 +38,10 @@ export class PostController {
 
   @Put(':id')
   async updatePost(
-    @Param('id') postId: string,
+    @Param('id') postId: number,
     @Body() updatePostDto: UpdatePostDto,
   ) {
-    return await this.postService.update(Number(postId), updatePostDto);
+    return await this.postService.update(postId, updatePostDto);
   }
 
   @Delete(':id')

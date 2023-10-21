@@ -11,9 +11,7 @@ interface PostOptionalProps {
   createdAt: string;
   updatedAt: string;
 }
-
 export interface Post extends PostRequiredProps, PostOptionalProps {}
-
 export interface PostCreateInput
   extends Omit<PostRequiredProps, 'id'>,
     Partial<PostOptionalProps> {}

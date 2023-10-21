@@ -1,5 +1,5 @@
 import { PG_CONNECTION } from '@/common/constants/pg.constants';
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { HttpStatus, Inject, Injectable } from '@nestjs/common';
 import * as schema from '@/database/schema';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { posts } from '@/database/schema';
@@ -11,7 +11,8 @@ import {
   PostCreateInput,
   PostUpdateInput,
 } from '@/common/interface/post.interface';
-
+import { selectPost } from '@/common/models/crud.model';
+import { BusinessException } from '@/common/exceptions/business.exception';
 @Injectable()
 export class PostService {
   constructor(
@@ -23,40 +24,51 @@ export class PostService {
     const title = search.title ? `%${search.title}%` : null;
     if (limit > 10) limit = 10;
     try {
-      const publishedPosts = await this.conn.query.posts.findMany({
-        where: and(
-          eq(posts.published, true),
-          like(posts.title, title || posts.title),
-        ),
-        limit: limit,
-        offset: page,
-        orderBy: posts.updatedAt,
-        with: { author: true },
-      });
+      const publishedPosts: selectPost[] = await this.conn.query.posts.findMany(
+        {
+          where: and(
+            eq(posts.published, true),
+            like(posts.title, title || posts.title),
+          ),
+          limit: limit,
+          offset: page,
+          orderBy: posts.updatedAt,
+          with: { author: true },
+        },
+      );
       if (isEmpty(publishedPosts[0]))
-        throw new NotFoundException(
-          `Post with title:'${search.title}' not exits!`,
+        throw new BusinessException(
+          'Posts',
+          `Post with title: ${title} not found!`,
+          'Post not found',
+          HttpStatus.NOT_FOUND,
         );
-      publishedPosts.map((post) => {
-        delete post.author.password;
-      });
+      // publishedPosts.map((post) => {
+      //   delete post.author.password;
+      // });
       return publishedPosts;
     } catch (error) {
       throw error;
     }
   }
 
-  async getPost(postId: number): Promise<any> {
+  async getPost(postId: number): Promise<Post> {
     try {
-      const post = await this.conn.query.posts.findFirst({
+      const post: selectPost = await this.conn.query.posts.findFirst({
         where: eq(posts.id, postId),
         with: {
           author: true,
         },
         orderBy: posts.id,
       });
-      if (!post) throw new NotFoundException(`Post #${postId} not found`);
-      delete post.author.password;
+      if (!post)
+        throw new BusinessException(
+          'Users',
+          `Post with id #${postId} not found`,
+          'Post not found',
+          HttpStatus.NOT_FOUND,
+        );
+      // delete post.author.password;
       return post;
     } catch (error) {
       throw error;
@@ -87,9 +99,13 @@ export class PostService {
           and(eq(posts.authorId, updatePost.authorId), eq(posts.id, postId)),
         )
         .returning();
-      console.log(updatedPost);
       if (!updatedPost)
-        throw new NotFoundException(`Post with id: #${postId} not found`);
+        throw new BusinessException(
+          'Posts',
+          `Post with id #${postId} not found`,
+          'Post not found',
+          HttpStatus.NOT_FOUND,
+        );
       return updatedPost;
     } catch (error) {
       throw error;
@@ -103,7 +119,12 @@ export class PostService {
         .where(and(eq(posts.id, postId), eq(posts.authorId, userId)))
         .returning();
       if (!deletedPost)
-        throw new NotFoundException(`Post with id:#${postId} Not found`);
+        throw new BusinessException(
+          'Users',
+          `Post with id #${postId} not found`,
+          'Post not found',
+          HttpStatus.NOT_FOUND,
+        );
       return deletedPost;
     } catch (error) {
       throw error;
