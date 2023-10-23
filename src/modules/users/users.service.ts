@@ -1,4 +1,6 @@
 import { PG_CONNECTION } from '@/common/constants/pg.constants';
+import { RoleType } from '@/common/interface/role.interface';
+import { User, UserCreateInput } from '@/common/interface/user.interface';
 import { users } from '@/database/schema';
 import * as schema from '@/database/schema';
 import {
@@ -9,13 +11,14 @@ import {
 } from '@nestjs/common';
 import { eq, like, or } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import { PaginationDto } from './dtos/pagination.dto';
 
 @Injectable()
 export class UsersService {
   constructor(
     @Inject(PG_CONNECTION) private readonly conn: NodePgDatabase<typeof schema>,
   ) {}
-  async find(searchUserDto: any): Promise<object[]> {
+  async find(searchUserDto: PaginationDto): Promise<User[]> {
     let limit: number = Number(searchUserDto.limit) || 5;
     const skip: number = Number(searchUserDto.offset - 1) * limit || 0;
     if (limit > 10) limit = 10;
@@ -36,7 +39,7 @@ export class UsersService {
     }
   }
 
-  async findById(userId: number): Promise<object> {
+  async findById(userId: number): Promise<User> {
     try {
       const user = await this.conn.query.users.findFirst({
         where: eq(users.id, userId),
@@ -49,8 +52,7 @@ export class UsersService {
     }
   }
 
-  async findOneByEmailOrUsername(emailOrUsername: string) {
-    console.log(emailOrUsername);
+  async findOneByEmailOrUsername(emailOrUsername: string): Promise<User[]> {
     try {
       const user = await this.conn.query.users.findMany({
         where: or(
@@ -65,7 +67,7 @@ export class UsersService {
     }
   }
 
-  async findOneByUsername(username: string): Promise<object[]> {
+  async findOneByUsername(username: string): Promise<User[]> {
     try {
       const user = await this.conn.query.users.findMany({
         where: like(users.username, `%${username}%`),
@@ -77,7 +79,7 @@ export class UsersService {
     }
   }
 
-  async findOneByEmail(email: string): Promise<object[]> {
+  async findOneByEmail(email: string): Promise<User[]> {
     try {
       const user = await this.conn.query.users.findMany({
         where: eq(users.email, email),
@@ -89,7 +91,7 @@ export class UsersService {
     }
   }
 
-  async create(userDto: any): Promise<object> {
+  async create(userDto: UserCreateInput): Promise<User> {
     try {
       const [CreatedUser] = await this.conn
         .insert(users)
@@ -107,11 +109,11 @@ export class UsersService {
 
   async updateRole(userId: number, newRole: string) {
     try {
-      if (newRole) throw new BadRequestException('INVALID_ROLE');
+      if (!RoleType[newRole]) throw new BadRequestException('INVALID_ROLE');
       const [updatedUser] = await this.conn
         .update(users)
         .set({
-          // role: RoleType[newRole],
+          role: RoleType[newRole],
         })
         .where(eq(users.id, userId))
         .returning();

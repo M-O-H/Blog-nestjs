@@ -8,13 +8,14 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
+import { PaginationDto } from './dtos/pagination.dto';
 import { UsersService } from './users.service';
 
 @Controller('users')
 export class UsersController {
   constructor(private readonly userService: UsersService) {}
   @Get('')
-  async findAll(@Query() paginationDto: any) {
+  async findAll(@Query() paginationDto: PaginationDto) {
     return await this.userService.find(paginationDto);
   }
 
