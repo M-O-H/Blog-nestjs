@@ -12,6 +12,7 @@ import {
 import { eq, like, or } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { PaginationDto } from './dtos/pagination.dto';
+import { insertUser, selecttUser } from '@/common/models/crud.model';
 
 @Injectable()
 export class UsersService {
@@ -24,7 +25,7 @@ export class UsersService {
     if (limit > 10) limit = 10;
     console.log(limit, skip);
     try {
-      const authUsers = await this.conn.query.users.findMany({
+      const authUsers: selecttUser[] = await this.conn.query.users.findMany({
         limit: limit,
         offset: skip,
         orderBy: users.createdAt,
@@ -41,7 +42,7 @@ export class UsersService {
 
   async findById(userId: number): Promise<User> {
     try {
-      const user = await this.conn.query.users.findFirst({
+      const user: selecttUser = await this.conn.query.users.findFirst({
         where: eq(users.id, userId),
         with: { posts: true },
       });
@@ -54,7 +55,7 @@ export class UsersService {
 
   async findOneByEmailOrUsername(emailOrUsername: string): Promise<User[]> {
     try {
-      const user = await this.conn.query.users.findMany({
+      const user: selecttUser[] = await this.conn.query.users.findMany({
         where: or(
           eq(users.email, emailOrUsername),
           like(users.username, `%${emailOrUsername}%`),
@@ -69,7 +70,7 @@ export class UsersService {
 
   async findOneByUsername(username: string): Promise<User[]> {
     try {
-      const user = await this.conn.query.users.findMany({
+      const user: selecttUser[] = await this.conn.query.users.findMany({
         where: like(users.username, `%${username}%`),
       });
       if (!user[0]) throw new NotFoundException(`user not found`);
@@ -81,7 +82,7 @@ export class UsersService {
 
   async findOneByEmail(email: string): Promise<User[]> {
     try {
-      const user = await this.conn.query.users.findMany({
+      const user: selecttUser[] = await this.conn.query.users.findMany({
         where: eq(users.email, email),
       });
       if (!user[0]) throw new NotFoundException(`user not found`);
@@ -93,7 +94,7 @@ export class UsersService {
 
   async create(userDto: UserCreateInput): Promise<User> {
     try {
-      const [CreatedUser] = await this.conn
+      const [CreatedUser]: insertUser[] = await this.conn
         .insert(users)
         .values(userDto)
         .onConflictDoNothing()
@@ -107,13 +108,13 @@ export class UsersService {
     }
   }
 
-  async updateRole(userId: number, newRole: string) {
+  async updateRole(userId: number, updatedRole: string) {
     try {
-      if (!RoleType[newRole]) throw new BadRequestException('INVALID_ROLE');
+      if (!RoleType[updatedRole]) throw new BadRequestException('INVALID_ROLE');
       const [updatedUser] = await this.conn
         .update(users)
         .set({
-          role: RoleType[newRole],
+          role: RoleType[updatedRole],
         })
         .where(eq(users.id, userId))
         .returning();

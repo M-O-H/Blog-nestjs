@@ -1,18 +1,7 @@
-export interface UserRquiredProps {
-  id: number;
-  username: string;
-  email: string;
-  password: string;
-}
+import { insertUser } from '../models/crud.model';
 
-export interface UserOptionalProps {
-  role: any; // Replace with proper enum type
-  createdAt: string;
-  updatedAt: string;
-}
+export interface User extends Omit<insertUser, 'password'> {}
 
-export interface User extends UserRquiredProps, UserOptionalProps {}
+export interface UserCreateInput extends insertUser {}
 
-export interface UserCreateInput extends Omit<User, 'id'> {}
-
-export interface UserUpdateInput extends Pick<UserRquiredProps, 'username'> {}
+export interface UpdateUserRole extends Pick<User, 'role'> {}

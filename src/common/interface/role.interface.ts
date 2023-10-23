@@ -1,6 +1,6 @@
 export enum RoleType {
-  ADMIN = 'ADMIN',
-  MANAGE_POSTS = 'MANAGE_POSTS',
-  MANAGE_COMMENTS = 'MANAGE_COMMENTS',
-  USER = 'USER',
+  'USER',
+  'ADMIN',
+  'MANAGE_POST',
+  'MANAGE_COMMENTS',
 }

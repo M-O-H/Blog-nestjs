@@ -39,7 +39,7 @@ export class UsersController {
   }
 
   @Patch(':id')
-  async createUser(
+  async updateUser(
     @Param('id', ParseIntPipe) userId: number,
     @Body('role') role: string,
   ) {
