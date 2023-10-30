@@ -31,9 +31,9 @@ export class UsersService {
         orderBy: users.createdAt,
       });
       if (!authUsers[0]) throw new BadRequestException();
-      authUsers.map((user) => {
-        delete user.password;
-      });
+      // authUsers.map((user) => {
+      //   delete user.password;
+      // });
       return authUsers;
     } catch (error) {
       throw error;
@@ -53,22 +53,24 @@ export class UsersService {
     }
   }
 
-  async findOneByEmailOrUsername(emailOrUsername: string): Promise<User[]> {
+  async findOneByEmailOrUsername(
+    emailOrUsername: string,
+  ): Promise<selecttUser> {
     try {
-      const user: selecttUser[] = await this.conn.query.users.findMany({
+      const [user]: selecttUser[] = await this.conn.query.users.findMany({
         where: or(
           eq(users.email, emailOrUsername),
           like(users.username, `%${emailOrUsername}%`),
         ),
       });
-      if (!user[0]) throw new NotFoundException(`user not found`);
+      if (!user) throw new NotFoundException(`user not found`);
       return user;
     } catch (error) {
       throw error;
     }
   }
 
-  async findOneByUsername(username: string): Promise<User[]> {
+  async findOneByUsername(username: string): Promise<any> {
     try {
       const user: selecttUser[] = await this.conn.query.users.findMany({
         where: like(users.username, `%${username}%`),
