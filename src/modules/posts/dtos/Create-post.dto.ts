@@ -15,6 +15,7 @@ export class CreatePostDto {
   @IsOptional()
   cover: string;
 
+  @IsOptional()
   @IsString({ each: true })
   tags: string[];
 }

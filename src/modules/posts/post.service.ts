@@ -32,7 +32,7 @@ export class PostService {
           ),
           limit: limit,
           offset: page,
-          orderBy: posts.updatedAt,
+          orderBy: posts.createdAt,
           with: { author: true },
         },
       );
@@ -75,14 +75,11 @@ export class PostService {
     }
   }
   // not found - post with title exist -
-  async createPost(
-    userId: number,
-    createPost: PostCreateInput,
-  ): Promise<Post[]> {
+  async createPost(createPost: PostCreateInput): Promise<Post[]> {
     try {
       return await this.conn
         .insert(posts)
-        .values({ authorId: userId, ...createPost })
+        .values({ authorId: 1, ...createPost })
         .onConflictDoNothing()
         .returning();
     } catch (error) {

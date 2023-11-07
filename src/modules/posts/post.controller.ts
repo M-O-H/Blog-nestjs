@@ -28,12 +28,10 @@ export class PostController {
     return await this.postService.getPost(postId);
   }
 
-  @Post(':id')
-  async createPost(
-    @Param('id') userId: number,
-    @Body() createPostDto: CreatePostDto,
-  ) {
-    return await this.postService.createPost(userId, createPostDto);
+  @Post()
+  async createPost(@Body() createPostDto: CreatePostDto) {
+    // console.log(createPostDto);
+    return await this.postService.createPost(createPostDto);
   }
 
   @Put(':id')

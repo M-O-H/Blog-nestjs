@@ -10,7 +10,6 @@ export class AuthService {
     username: string,
     password: string,
   ): Promise<User | null> {
-    console.log(username, password);
     const user = await this.userService.findOneByEmailOrUsername(username);
     if (user && user.password == password) {
       delete user.password;

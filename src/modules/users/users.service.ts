@@ -47,6 +47,7 @@ export class UsersService {
         with: { posts: true },
       });
       if (!user) throw new NotFoundException(`user not found`);
+      delete user.password;
       return user;
     } catch (error) {
       throw error;

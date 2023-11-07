@@ -10,5 +10,6 @@ import { LocalStrategy } from './passport-strategy/local.strategy';
   imports: [UsersModule, PassportModule],
   providers: [AuthService, LocalStrategy, LocalAuthGuard],
   controllers: [AuthController],
+  exports: [AuthService],
 })
 export class AuthModule {}
