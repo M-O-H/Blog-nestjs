@@ -1,4 +1,4 @@
-import { JwtAuthGuard } from '@/common/guards/jwt-auth.garud';
+import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
 import { LocalAuthGuard } from '@/common/guards/local-auth.guard';
 import { UsersModule } from '@/modules/users/users.module';
 import { Module } from '@nestjs/common';
@@ -9,6 +9,7 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtStrategy } from './passport-strategy/jwt.strategy';
 import { LocalStrategy } from './passport-strategy/local.strategy';
+import { TokenService } from './token.service';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { LocalStrategy } from './passport-strategy/local.strategy';
     LocalAuthGuard,
     JwtAuthGuard,
     JwtStrategy,
+    TokenService,
   ],
   controllers: [AuthController],
   exports: [AuthService],

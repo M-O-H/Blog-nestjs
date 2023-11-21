@@ -29,6 +29,7 @@ export const users = pgTable('users', {
 
 export const usersRelations = relations(users, ({ many }) => ({
   posts: many(posts),
+  comments: many(comments),
 }));
 
 export const posts = pgTable('posts', {
@@ -44,9 +45,30 @@ export const posts = pgTable('posts', {
   tags: text('tags').default('[]'),
 });
 
-export const postsRelations = relations(posts, ({ one }) => ({
+export const postsRelations = relations(posts, ({ one, many }) => ({
   author: one(users, {
     fields: [posts.authorId],
+    references: [users.id],
+  }),
+  comments: many(comments),
+}));
+
+export const comments = pgTable('comments', {
+  id: serial('id').primaryKey(),
+  text: text('text').notNull(),
+  authorId: integer('authorId').notNull(),
+  postId: integer('postId').notNull(),
+  createdAt: timestamp('createdAt', { mode: 'string' }).defaultNow(),
+  updatedAt: timestamp('updatedAt', { mode: 'string' }).defaultNow(),
+});
+
+export const commentsRelations = relations(comments, ({ one }) => ({
+  post: one(posts, {
+    fields: [comments.postId],
+    references: [posts.id],
+  }),
+  author: one(users, {
+    fields: [comments.authorId],
     references: [users.id],
   }),
 }));

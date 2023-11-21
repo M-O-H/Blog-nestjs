@@ -1,10 +1,12 @@
 import { Module } from '@nestjs/common';
 import { UsersModule } from './modules/users/users.module';
 import { PostsModule } from './modules/posts/post.module';
-import { CommentsModule } from './modules/comments/comments.module';
 import { ConfigModule } from '@nestjs/config';
 import { DrizzleModule } from './database/drizzle.module';
 import { AuthModule } from './authentication/auth.module';
+import { APP_GUARD } from '@nestjs/core';
+import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
+import { CommentsModule } from './modules/comments/comments.module';
 
 @Module({
   imports: [
@@ -19,6 +21,11 @@ import { AuthModule } from './authentication/auth.module';
     }),
   ],
   controllers: [],
-  providers: [],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard,
+    },
+  ],
 })
 export class AppModule {}

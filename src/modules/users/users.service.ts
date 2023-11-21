@@ -13,12 +13,14 @@ import { eq, like, or } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { PaginationDto } from './dtos/pagination.dto';
 import { insertUser, selecttUser } from '@/common/models/crud.model';
+import { BusinessException } from '@/common/exceptions/business.exception';
 
 @Injectable()
 export class UsersService {
   constructor(
     @Inject(PG_CONNECTION) private readonly conn: NodePgDatabase<typeof schema>,
   ) {}
+  // ----------- Dev service ---------------- //
   async find(searchUserDto: PaginationDto): Promise<User[]> {
     let limit: number = Number(searchUserDto.limit) || 5;
     const skip: number = Number(searchUserDto.offset - 1) * limit || 0;
@@ -30,27 +32,13 @@ export class UsersService {
         offset: skip,
         orderBy: users.createdAt,
       });
-      if (!authUsers[0]) throw new BadRequestException();
-      // authUsers.map((user) => {
-      //   delete user.password;
-      // });
+      if (!authUsers[0]) throw new BadRequestException('Users list empty');
+      authUsers.map((user) => {
+        delete user.password;
+      });
       return authUsers;
     } catch (error) {
-      throw error;
-    }
-  }
-
-  async findById(userId: number): Promise<User> {
-    try {
-      const user: selecttUser = await this.conn.query.users.findFirst({
-        where: eq(users.id, userId),
-        with: { posts: true },
-      });
-      if (!user) throw new NotFoundException(`user not found`);
-      delete user.password;
-      return user;
-    } catch (error) {
-      throw error;
+      throw new BusinessException('Users', error);
     }
   }
 
@@ -67,7 +55,7 @@ export class UsersService {
       if (!user) throw new NotFoundException(`user not found`);
       return user;
     } catch (error) {
-      throw error;
+      throw new BusinessException('Users', error);
     }
   }
 
@@ -79,7 +67,7 @@ export class UsersService {
       if (!user[0]) throw new NotFoundException(`user not found`);
       return user;
     } catch (error) {
-      throw error;
+      throw new BusinessException('Users', error);
     }
   }
 
@@ -91,7 +79,42 @@ export class UsersService {
       if (!user[0]) throw new NotFoundException(`user not found`);
       return user;
     } catch (error) {
-      throw error;
+      throw new BusinessException('Users', error);
+    }
+  }
+
+  // ----------- Private  Services ---------------- //
+  async updateRole(userId: number, updatedRole: string) {
+    try {
+      if (!RoleType[updatedRole]) throw new BadRequestException('INVALID_ROLE');
+      const [updatedUser] = await this.conn
+        .update(users)
+        .set({
+          role: RoleType[updatedRole],
+        })
+        .where(eq(users.id, userId))
+        .returning();
+      if (!updatedUser) throw new NotFoundException(`INVALID_USER_ID`);
+      return updatedUser;
+    } catch (error) {
+      throw new BusinessException('Users', error);
+    }
+  }
+
+  // ----------- Dev  Methods ---------------- //
+  async findById(userId: number): Promise<User> {
+    try {
+      const user: selecttUser = await this.conn.query.users.findFirst({
+        where: eq(users.id, userId),
+        with: {
+          comments: true,
+        },
+      });
+      if (!user) throw new NotFoundException(`user not found`);
+      delete user.password;
+      return user;
+    } catch (error) {
+      throw new BusinessException('Users', error, userId);
     }
   }
 
@@ -107,24 +130,7 @@ export class UsersService {
       delete CreatedUser.password;
       return CreatedUser;
     } catch (error) {
-      throw error;
-    }
-  }
-
-  async updateRole(userId: number, updatedRole: string) {
-    try {
-      if (!RoleType[updatedRole]) throw new BadRequestException('INVALID_ROLE');
-      const [updatedUser] = await this.conn
-        .update(users)
-        .set({
-          role: RoleType[updatedRole],
-        })
-        .where(eq(users.id, userId))
-        .returning();
-      if (!updatedUser) throw new NotFoundException(`INVALID_USER_ID`);
-      return updatedUser;
-    } catch (error) {
-      throw error;
+      throw new BusinessException('Users', error);
     }
   }
 }

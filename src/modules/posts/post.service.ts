@@ -1,5 +1,5 @@
 import { PG_CONNECTION } from '@/common/constants/pg.constants';
-import { HttpStatus, Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import * as schema from '@/database/schema';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { posts } from '@/database/schema';
@@ -37,18 +37,13 @@ export class PostService {
         },
       );
       if (isEmpty(publishedPosts[0]))
-        throw new BusinessException(
-          'Posts',
-          `Post with title: ${title} not found!`,
-          'Post not found',
-          HttpStatus.NOT_FOUND,
-        );
+        throw new NotFoundException('Post not found');
       // publishedPosts.map((post) => {
       //   delete post.author.password;
       // });
       return publishedPosts;
     } catch (error) {
-      throw error;
+      throw new BusinessException('Posts', error);
     }
   }
 
@@ -58,54 +53,48 @@ export class PostService {
         where: eq(posts.id, postId),
         with: {
           author: true,
+          comments: true,
         },
         orderBy: posts.id,
       });
-      if (!post)
-        throw new BusinessException(
-          'Users',
-          `Post with id #${postId} not found`,
-          'Post not found',
-          HttpStatus.NOT_FOUND,
-        );
+      if (!post) throw new NotFoundException('Post not found');
       // delete post.author.password;
       return post;
     } catch (error) {
-      throw error;
+      throw new BusinessException('Posts', error, postId);
     }
   }
   // not found - post with title exist -
-  async createPost(createPost: PostCreateInput): Promise<Post[]> {
+  async createPost(
+    userId: number,
+    createPost: PostCreateInput,
+  ): Promise<Post[]> {
     try {
       return await this.conn
         .insert(posts)
-        .values({ authorId: 1, ...createPost })
+        .values({ authorId: userId, ...createPost })
         .onConflictDoNothing()
         .returning();
     } catch (error) {
-      throw error;
+      throw new BusinessException('Posts', error);
     }
   }
 
-  async update(postId: number, updatePost: PostUpdateInput): Promise<Post> {
+  async update(
+    userId: number,
+    postId: number,
+    updatePost: PostUpdateInput,
+  ): Promise<Post> {
     try {
       const [updatedPost] = await this.conn
         .update(posts)
         .set(updatePost)
-        .where(
-          and(eq(posts.authorId, updatePost.authorId), eq(posts.id, postId)),
-        )
+        .where(and(eq(posts.authorId, userId), eq(posts.id, postId)))
         .returning();
-      if (!updatedPost)
-        throw new BusinessException(
-          'Posts',
-          `Post with id #${postId} not found`,
-          'Post not found',
-          HttpStatus.NOT_FOUND,
-        );
+      if (!updatedPost) throw new NotFoundException('Post not found');
       return updatedPost;
     } catch (error) {
-      throw error;
+      throw new BusinessException('Posts', error, postId);
     }
   }
 
@@ -113,18 +102,12 @@ export class PostService {
     try {
       const [deletedPost] = await this.conn
         .delete(posts)
-        .where(and(eq(posts.id, postId), eq(posts.authorId, userId)))
+        .where(and(eq(posts.authorId, userId), eq(posts.id, postId)))
         .returning();
-      if (!deletedPost)
-        throw new BusinessException(
-          'Users',
-          `Post with id #${postId} not found`,
-          'Post not found',
-          HttpStatus.NOT_FOUND,
-        );
+      if (!deletedPost) throw new NotFoundException('Post not found');
       return deletedPost;
     } catch (error) {
-      throw error;
+      throw new BusinessException('Posts', error, postId);
     }
   }
 }

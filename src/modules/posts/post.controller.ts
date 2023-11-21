@@ -1,4 +1,5 @@
 import { ParseIntPipe } from '@/common/pipes/parse-int.pipe';
+import { IsPublic } from '@/common/decorator/public.decorator';
 import {
   Body,
   Controller,
@@ -8,6 +9,7 @@ import {
   Post,
   Put,
   Query,
+  Request,
   UsePipes,
 } from '@nestjs/common';
 import { CreatePostDto } from './dtos/Create-post.dto';
@@ -19,32 +21,35 @@ import { PostService } from './post.service';
 @Controller('posts')
 export class PostController {
   constructor(private readonly postService: PostService) {}
+  // ----------- Dev Routes ---------------- //
+  @IsPublic()
   @Get('/')
-  async getPublicPost(@Query() searchDto: SerachDto) {
+  async getPublishedPost(@Query() searchDto: SerachDto) {
     return await this.postService.getPublicPosts(searchDto);
   }
+
+  // ----------- Private Routes ---------------- //
   @Get(':id')
   async getPost(@Param('id') postId: number) {
     return await this.postService.getPost(postId);
   }
 
   @Post()
-  async createPost(@Body() createPostDto: CreatePostDto) {
-    // console.log(createPostDto);
-    return await this.postService.createPost(createPostDto);
+  async createPost(@Request() req, @Body() createPostDto: CreatePostDto) {
+    return await this.postService.createPost(req.user.id, createPostDto);
   }
 
   @Put(':id')
   async updatePost(
+    @Request() req,
     @Param('id') postId: number,
     @Body() updatePostDto: UpdatePostDto,
   ) {
-    return await this.postService.update(postId, updatePostDto);
+    return await this.postService.update(req.user.id, postId, updatePostDto);
   }
 
   @Delete(':id')
-  async deletePost(@Param('id') postId: number) {
-    const userId = 1;
-    return await this.postService.delete(userId, postId);
+  async deletePost(@Request() req, @Param('id') postId: number) {
+    return await this.postService.delete(req.user.id, postId);
   }
 }

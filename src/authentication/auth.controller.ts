@@ -1,21 +1,37 @@
-import { JwtAuthGuard } from '@/common/guards/jwt-auth.garud';
+import { IsPublic } from '@/common/decorator/public.decorator';
 import { LocalAuthGuard } from '@/common/guards/local-auth.guard';
-import { Controller, Get, Post, Request, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  HttpStatus,
+  Post,
+  Request,
+  Response,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
-
+import { SignUpDto } from './Dtos/sign-up.dto';
+@IsPublic()
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @UseGuards(LocalAuthGuard)
-  @Post('login')
-  async login(@Request() req) {
-    const userToken = await this.authService.login(req.user);
-    return userToken;
+  @Post('signin')
+  async sigIn(@Request() req, @Response() res) {
+    const userToken = await this.authService.signIn(req.user);
+    return res.status(HttpStatus.OK).json({
+      statusCode: HttpStatus.OK,
+      ...userToken,
+    });
   }
-  @UseGuards(JwtAuthGuard)
-  @Get('/protected')
-  async protected(@Request() req) {
-    return this.authService.authUser(req.user.id);
+
+  @Post('signup')
+  async signUp(@Body() signUpDto: SignUpDto, @Response() res) {
+    const token = await this.authService.signUp(signUpDto);
+    return res.status(HttpStatus.CREATED).json({
+      statusCode: HttpStatus.OK,
+      ...token,
+    });
   }
 }

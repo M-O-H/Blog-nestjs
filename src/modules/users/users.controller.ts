@@ -1,3 +1,4 @@
+import { IsPublic } from '@/common/decorator/public.decorator';
 import {
   Body,
   Controller,
@@ -14,28 +15,24 @@ import { UsersService } from './users.service';
 @Controller('users')
 export class UsersController {
   constructor(private readonly userService: UsersService) {}
-  @Get('')
-  async findAll(@Query() paginationDto: PaginationDto) {
-    return await this.userService.find(paginationDto);
+
+  // ----------- Public Routes ---------------- //
+  @IsPublic()
+  @Get('profile/:name')
+  async profile(@Param('name') username: string) {
+    return await this.userService.findOneByEmail(username);
   }
 
-  @Get(':id')
-  async findUserByid(@Param('id', ParseIntPipe) userId: number) {
-    return await this.userService.findById(userId);
-  }
-  @Post('')
-  async findUserByEmailOrUsername(@Body('input') body: string) {
-    return await this.userService.findOneByEmailOrUsername(body);
-  }
-
-  @Post('/username')
-  async findUserByUsername(@Body('username') username: string) {
-    return await this.userService.findOneByUsername(username);
-  }
-
+  @IsPublic()
   @Post('/email')
   async findUserByeEmail(@Body('email') email: string) {
     return await this.userService.findOneByEmail(email);
+  }
+
+  // ----------- Private Routes ---------------- //
+  @Get()
+  async findAll(@Query() paginationDto: PaginationDto) {
+    return await this.userService.find(paginationDto);
   }
 
   @Patch(':id')
@@ -44,5 +41,12 @@ export class UsersController {
     @Body('role') role: string,
   ) {
     return await this.userService.updateRole(userId, role);
+  }
+
+  // ----------- Dev Routes ---------------- //
+  @IsPublic()
+  @Get(':id')
+  async findUserByid(@Param('id', ParseIntPipe) userId: number) {
+    return await this.userService.findById(userId);
   }
 }
