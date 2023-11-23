@@ -16,7 +16,7 @@ export interface insertPostWithAuthorId
   extends insertPost,
     Pick<insertUser, 'id'> {}
 
-type test = {
+type Author = {
   author: Omit<selecttUser, 'password'>;
 };
-export interface selectPostWithAuthor extends selectPost, test {}
+export interface selectPostWithAuthor extends selectPost, Author {}
