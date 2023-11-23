@@ -6,8 +6,8 @@ import {
   Delete,
   Get,
   Param,
+  Patch,
   Post,
-  Put,
   Query,
   Request,
   UsePipes,
@@ -36,20 +36,21 @@ export class PostController {
 
   @Post()
   async createPost(@Request() req, @Body() createPostDto: CreatePostDto) {
+    console.log(req.headers);
     return await this.postService.createPost(req.user.id, createPostDto);
   }
 
-  @Put(':id')
+  @Patch(':id')
   async updatePost(
     @Request() req,
     @Param('id') postId: number,
     @Body() updatePostDto: UpdatePostDto,
   ) {
-    return await this.postService.update(req.user.id, postId, updatePostDto);
+    return await this.postService.update(req.user, postId, updatePostDto);
   }
 
   @Delete(':id')
   async deletePost(@Request() req, @Param('id') postId: number) {
-    return await this.postService.delete(req.user.id, postId);
+    return await this.postService.delete(req.user, postId);
   }
 }

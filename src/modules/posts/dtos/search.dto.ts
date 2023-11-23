@@ -12,7 +12,7 @@ export class SerachDto {
   @IsNumber()
   @IsPositive()
   @IsOptional()
-  offset: number;
+  page: number;
 
   @IsNumber()
   @IsPositive()

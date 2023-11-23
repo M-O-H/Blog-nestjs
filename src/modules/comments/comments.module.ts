@@ -3,9 +3,10 @@ import { CommentsService } from './comments.service';
 import { CommentsController } from './comments.controller';
 import { DrizzleModule } from '@/database/drizzle.module';
 import { CommentsRepository } from './comments.repository';
+import { PostsRepository } from '../posts/post.repository';
 @Module({
   imports: [DrizzleModule],
   controllers: [CommentsController],
-  providers: [CommentsService, CommentsRepository],
+  providers: [CommentsService, CommentsRepository, PostsRepository],
 })
 export class CommentsModule {}

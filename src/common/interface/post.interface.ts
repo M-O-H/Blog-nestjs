@@ -1,19 +1,16 @@
-interface PostRequiredProps {
-  id: number;
-  title: string;
-  content: string;
-  authorId?: number;
-}
+import {
+  selectPost,
+  insertPost,
+  insertUser,
+  selectComments,
+} from '../models/crud.model';
 
-interface PostOptionalProps {
-  published: boolean;
-  cover: string;
-  createdAt: string;
-  updatedAt: string;
-}
-export interface Post extends PostRequiredProps, PostOptionalProps {}
-export interface PostCreateInput
-  extends Omit<PostRequiredProps, 'id'>,
-    Partial<PostOptionalProps> {}
-
+export interface Post extends selectPost {}
+export interface PostCreateInput extends Omit<insertPost, 'id' | 'authorId'> {}
 export interface PostUpdateInput extends Partial<PostCreateInput> {}
+export interface PostWithAuthor extends Post {
+  author: Omit<insertUser, 'password'>;
+}
+export interface PostWithComments extends Post {
+  comments: selectComments[];
+}

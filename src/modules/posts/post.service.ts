@@ -1,111 +1,102 @@
 import { PG_CONNECTION } from '@/common/constants/pg.constants';
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import * as schema from '@/database/schema';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import { posts } from '@/database/schema';
-import { and, eq, like } from 'drizzle-orm';
 import { SerachDto } from './dtos/search.dto';
 import { isEmpty } from 'class-validator';
-import {
-  Post,
-  PostCreateInput,
-  PostUpdateInput,
-} from '@/common/interface/post.interface';
-import { selectPost } from '@/common/models/crud.model';
+import { insertPost, selectPost } from '@/common/models/crud.model';
 import { BusinessException } from '@/common/exceptions/business.exception';
+import { PostsRepository } from './post.repository';
+import { UpdatePostDto } from './dtos/update-post.dto';
+import { CreatePostDto } from './dtos/Create-post.dto';
+import { User } from '@/common/interface/user.interface';
+import { Role } from '@/common/interface/role.interface';
 @Injectable()
 export class PostService {
   constructor(
     @Inject(PG_CONNECTION) private readonly conn: NodePgDatabase<typeof schema>,
+    private readonly postsRepository: PostsRepository,
   ) {}
-  async getPublicPosts(search: SerachDto): Promise<Post[]> {
+  async getPublicPosts(search: SerachDto) {
     let limit: number = Number(search.limit) || 10;
-    const page: number = Number(search.offset - 1) * limit || 0;
+    const page: number = Number(search.page) || 1;
     const title = search.title ? `%${search.title}%` : null;
     if (limit > 10) limit = 10;
     try {
-      const publishedPosts: selectPost[] = await this.conn.query.posts.findMany(
-        {
-          where: and(
-            eq(posts.published, true),
-            like(posts.title, title || posts.title),
-          ),
-          limit: limit,
-          offset: page,
-          orderBy: posts.createdAt,
-          with: { author: true },
-        },
-      );
+      const publishedPosts: selectPost[] =
+        await this.postsRepository.findPublic(page, limit, title);
       if (isEmpty(publishedPosts[0]))
         throw new NotFoundException('Post not found');
-      // publishedPosts.map((post) => {
-      //   delete post.author.password;
-      // });
+      // TODO: remove author's password on data query
+      publishedPosts.map((post: any) => {
+        delete post.author.password;
+      });
       return publishedPosts;
     } catch (error) {
       throw new BusinessException('Posts', error);
     }
   }
 
-  async getPost(postId: number): Promise<Post> {
+  async getPost(postId: number) {
     try {
-      const post: selectPost = await this.conn.query.posts.findFirst({
-        where: eq(posts.id, postId),
-        with: {
-          author: true,
-          comments: true,
-        },
-        orderBy: posts.id,
-      });
+      const post: selectPost = await this.postsRepository.getById(postId);
       if (!post) throw new NotFoundException('Post not found');
-      // delete post.author.password;
       return post;
     } catch (error) {
       throw new BusinessException('Posts', error, postId);
     }
   }
   // not found - post with title exist -
-  async createPost(
-    userId: number,
-    createPost: PostCreateInput,
-  ): Promise<Post[]> {
+  async createPost(userId: number, createPost: CreatePostDto) {
     try {
-      return await this.conn
-        .insert(posts)
-        .values({ authorId: userId, ...createPost })
-        .onConflictDoNothing()
-        .returning();
+      const [createdPost]: insertPost[] = await this.postsRepository.create(
+        userId,
+        createPost,
+      );
+      return {
+        message: 'Post created successfully',
+        preview: createdPost,
+      };
     } catch (error) {
       throw new BusinessException('Posts', error);
     }
   }
 
-  async update(
-    userId: number,
-    postId: number,
-    updatePost: PostUpdateInput,
-  ): Promise<Post> {
+  async update(user: User, postId: number, updatePost: UpdatePostDto) {
     try {
-      const [updatedPost] = await this.conn
-        .update(posts)
-        .set(updatePost)
-        .where(and(eq(posts.authorId, userId), eq(posts.id, postId)))
-        .returning();
-      if (!updatedPost) throw new NotFoundException('Post not found');
-      return updatedPost;
+      const post = await this.postsRepository.getById(postId);
+      if (!post) throw new NotFoundException('Post not found');
+      if (post.authorId != user.id && !user.role.includes(Role.ADMIN))
+        throw new ForbiddenException('Permission Denied');
+      const [updatedPost]: selectPost[] = await this.postsRepository.update(
+        postId,
+        updatePost,
+      );
+      return {
+        message: 'Post updated successfully',
+        preview: updatedPost,
+      };
     } catch (error) {
       throw new BusinessException('Posts', error, postId);
     }
   }
 
-  async delete(userId: number, postId: number): Promise<Post> {
+  async delete(user: any, postId: number) {
     try {
-      const [deletedPost] = await this.conn
-        .delete(posts)
-        .where(and(eq(posts.authorId, userId), eq(posts.id, postId)))
-        .returning();
-      if (!deletedPost) throw new NotFoundException('Post not found');
-      return deletedPost;
+      const post = await this.postsRepository.getById(postId);
+      if (!post) throw new NotFoundException('Post not found');
+      if (post.authorId != user.id && !user.role.includes(Role.ADMIN))
+        throw new ForbiddenException('Permission Denied');
+      const [deletedPost] = await this.postsRepository.deleteOne(postId);
+      return {
+        message: 'Post deleted successfully',
+        deletedPost,
+      };
     } catch (error) {
       throw new BusinessException('Posts', error, postId);
     }

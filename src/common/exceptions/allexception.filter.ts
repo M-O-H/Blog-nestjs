@@ -3,7 +3,6 @@ import {
   Catch,
   ExceptionFilter,
   HttpException,
-  HttpStatus,
   Logger,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
@@ -34,12 +33,7 @@ export class AllExceptions implements ExceptionFilter {
         timestamp: new Date(),
       };
     else {
-      body = new BusinessException(
-        'Generic',
-        `Internal error occured ${exception.message}`,
-        'Internal error occured',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      body = new BusinessException('Generic', exception);
     }
     this.logger.error({
       ...body,

@@ -15,7 +15,7 @@ export class BusinessException extends Error {
     super(domain);
     const metaData = isNaN(data) ? '' : ` ID:${data}`;
     this.timestamp = new Date();
-    this.apiMessage = error.response.message || '';
+    this.apiMessage = error.response?.message || '';
     this.message = data ? error.message + metaData : error.message || '';
     this.status = error.status;
   }

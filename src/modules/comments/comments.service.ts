@@ -1,45 +1,43 @@
-import { PG_CONNECTION } from '@/common/constants/pg.constants';
 import {
   ForbiddenException,
-  Inject,
   Injectable,
   NotFoundException,
   ParseIntPipe,
   UsePipes,
 } from '@nestjs/common';
-import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
-import * as schema from '@/database/schema';
-import { eq } from 'drizzle-orm';
 import { User } from '@/common/interface/user.interface';
 import { QueryDto } from './dto/query.dto';
-import { selectComments } from '@/common/models/crud.model';
+import { insertComments, selectComments } from '@/common/models/crud.model';
 import { BusinessException } from '@/common/exceptions/business.exception';
 import { Role } from '@/common/interface/role.interface';
 import { CommentsRepository } from './comments.repository';
+import { PostsRepository } from '../posts/post.repository';
 
 @UsePipes(ParseIntPipe)
 @Injectable()
 export class CommentsService {
   constructor(
-    @Inject(PG_CONNECTION) private readonly conn: NodePgDatabase<typeof schema>,
     private readonly CommentRepository: CommentsRepository,
+    private readonly postsRepository: PostsRepository,
   ) {}
 
   async create(userId: number, data: CreateCommentDto) {
     try {
-      const hasPost = await this.conn.query.posts.findFirst({
-        where: eq(schema.posts.id, data.postId),
-      }); //TODO: replace with post rep's methods
-
+      const hasPost = await this.postsRepository.getById(data.postId);
       if (!hasPost || !hasPost.published)
         throw new NotFoundException('Post not found');
-
-      return await this.CommentRepository.create({
-        authorId: userId,
-        ...data,
-      });
+      const authorId = userId;
+      const [createdComment]: insertComments[] =
+        await this.CommentRepository.create({
+          authorId,
+          ...data,
+        });
+      return {
+        message: 'Comment created successfully',
+        preview: createdComment,
+      };
     } catch (error) {
       throw new BusinessException('Comments', error, data.postId);
     }
@@ -104,9 +102,11 @@ export class CommentsService {
       if (!comment) throw new NotFoundException('Comment Not Found');
       if (comment.authorId != user.id && !user.role.includes(Role.ADMIN))
         throw new ForbiddenException('Permission Denied');
-      await this.CommentRepository.deleteOne(commentId);
+      const [deletedComment] =
+        await this.CommentRepository.deleteOne(commentId);
       return {
         message: 'Comment deleted successfully',
+        deletedComment,
       };
     } catch (error) {
       throw new BusinessException('Comments', error, commentId);
