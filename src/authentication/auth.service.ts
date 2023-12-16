@@ -13,7 +13,6 @@ export class AuthService {
 
   async validate(username: string, password: string): Promise<User | null> {
     const user = await this.userService.findOneByEmailOrUsername(username);
-    console.log(user);
     if (user && user.password == password) {
       delete user.password;
       return user;

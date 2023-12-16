@@ -16,9 +16,7 @@ import {
 export class PostsRepository {
   constructor(
     @Inject(PG_CONNECTION) private readonly db: NodePgDatabase<typeof schema>,
-  ) {
-    console.log('POST PROVIDE INSTANTIVATE');
-  }
+  ) {}
   async create(userId: number, input: PostCreateInput) {
     return this.db
       .insert(posts)
@@ -79,5 +77,10 @@ export class PostsRepository {
 
   async deleteUserPosts(userId: number): Promise<Post[] | null> {
     return this.db.delete(posts).where(eq(posts.authorId, userId)).returning();
+  }
+  async getPrivatePosts() {
+    return this.db.query.posts.findMany({
+      where: eq(posts.published, false),
+    });
   }
 }

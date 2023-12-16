@@ -8,5 +8,6 @@ import { PostsRepository } from '../posts/post.repository';
   imports: [DrizzleModule],
   controllers: [CommentsController],
   providers: [CommentsService, CommentsRepository, PostsRepository],
+  exports: [CommentsService],
 })
 export class CommentsModule {}

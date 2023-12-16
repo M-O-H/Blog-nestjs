@@ -1,6 +1,6 @@
 import { HttpStatus } from '@nestjs/common';
 
-export type ErrorDomain = 'Users' | 'Posts' | 'Comments' | 'Generic';
+export type ErrorDomain = 'Users' | 'Posts' | 'Comments' | 'Generic' | 'Upload';
 
 export class BusinessException extends Error {
   public readonly timestamp: Date;

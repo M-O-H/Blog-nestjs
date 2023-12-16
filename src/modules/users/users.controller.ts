@@ -4,10 +4,9 @@ import {
   Controller,
   Get,
   Param,
-  ParseIntPipe,
   Patch,
-  Post,
   Query,
+  Request,
 } from '@nestjs/common';
 import { PaginationDto } from './dtos/pagination.dto';
 import { UsersService } from './users.service';
@@ -17,36 +16,26 @@ export class UsersController {
   constructor(private readonly userService: UsersService) {}
 
   // ----------- Public Routes ---------------- //
-  @IsPublic()
-  @Get('profile/:name')
-  async profile(@Param('name') username: string) {
-    return await this.userService.findOneByEmail(username);
+  @Get('profile/@me')
+  async profile(@Request() req) {
+    console.log(req.user);
+    return await this.userService.findById(req.user.id);
   }
 
   @IsPublic()
-  @Post('/email')
-  async findUserByeEmail(@Body('email') email: string) {
-    return await this.userService.findOneByEmail(email);
+  @Get('profile/:username')
+  async findUserByeEmail(@Param('username') username: string) {
+    return await this.userService.findOneByUsername(username);
+  }
+
+  @Patch('update/:id')
+  async updateRole(@Param('id') userId: number, @Body('role') roleDto: string) {
+    return await this.userService.updateRole(userId, roleDto);
   }
 
   // ----------- Private Routes ---------------- //
   @Get()
   async findAll(@Query() paginationDto: PaginationDto) {
     return await this.userService.find(paginationDto);
-  }
-
-  @Patch(':id')
-  async updateUser(
-    @Param('id', ParseIntPipe) userId: number,
-    @Body('role') role: string,
-  ) {
-    return await this.userService.updateRole(userId, role);
-  }
-
-  // ----------- Dev Routes ---------------- //
-  @IsPublic()
-  @Get(':id')
-  async findUserByid(@Param('id', ParseIntPipe) userId: number) {
-    return await this.userService.findById(userId);
   }
 }

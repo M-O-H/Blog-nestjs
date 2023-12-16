@@ -10,13 +10,15 @@ import {
   Post,
   Query,
   Request,
+  UseGuards,
   UsePipes,
 } from '@nestjs/common';
 import { CreatePostDto } from './dtos/Create-post.dto';
 import { SerachDto } from './dtos/search.dto';
-import { UpdatePostDto } from './dtos/update-post.dto';
 import { PostService } from './post.service';
-
+import { CheckUserRole } from '@/common/guards/check-role.gaurd';
+// import { Role, RoleType } from '@/common/interface/role.interface';
+import { UpdatePostDto } from './dtos/update-post.dto';
 @UsePipes(ParseIntPipe)
 @Controller('posts')
 export class PostController {
@@ -29,15 +31,20 @@ export class PostController {
   }
 
   // ----------- Private Routes ---------------- //
-  @Get(':id')
+  @Get('search/:id')
   async getPost(@Param('id') postId: number) {
     return await this.postService.getPost(postId);
   }
 
-  @Post()
+  @Post('/')
   async createPost(@Request() req, @Body() createPostDto: CreatePostDto) {
-    console.log(req.headers);
-    return await this.postService.createPost(req.user.id, createPostDto);
+    // const uuid = uuidv4();
+    // return uuid;
+    const createdPost = await this.postService.createPost(
+      req.user.id,
+      createPostDto,
+    );
+    return createdPost;
   }
 
   @Patch(':id')
@@ -52,5 +59,10 @@ export class PostController {
   @Delete(':id')
   async deletePost(@Request() req, @Param('id') postId: number) {
     return await this.postService.delete(req.user, postId);
+  }
+  @UseGuards(new CheckUserRole([]))
+  @Get('/private')
+  async privatePosts() {
+    return await this.postService.private();
   }
 }

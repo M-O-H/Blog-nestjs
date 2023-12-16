@@ -1,12 +1,8 @@
-import { PG_CONNECTION } from '@/common/constants/pg.constants';
 import {
   ForbiddenException,
-  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import * as schema from '@/database/schema';
-import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { SerachDto } from './dtos/search.dto';
 import { isEmpty } from 'class-validator';
 import { insertPost, selectPost } from '@/common/models/crud.model';
@@ -18,10 +14,7 @@ import { User } from '@/common/interface/user.interface';
 import { Role } from '@/common/interface/role.interface';
 @Injectable()
 export class PostService {
-  constructor(
-    @Inject(PG_CONNECTION) private readonly conn: NodePgDatabase<typeof schema>,
-    private readonly postsRepository: PostsRepository,
-  ) {}
+  constructor(private readonly postsRepository: PostsRepository) {}
   async getPublicPosts(search: SerachDto) {
     let limit: number = Number(search.limit) || 10;
     const page: number = Number(search.page) || 1;
@@ -100,5 +93,8 @@ export class PostService {
     } catch (error) {
       throw new BusinessException('Posts', error, postId);
     }
+  }
+  async private() {
+    return await this.postsRepository.getPrivatePosts();
   }
 }

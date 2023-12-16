@@ -4,11 +4,8 @@ import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import * as schema from '@/database/schema';
 import { users } from '@/database/schema';
 import { eq, like, or } from 'drizzle-orm';
-import {
-  UpdateUserRole,
-  User,
-  UserCreateInput,
-} from '@/common/interface/user.interface';
+import { User, UserCreateInput } from '@/common/interface/user.interface';
+import { Role } from '@/common/interface/role.interface';
 
 @Injectable()
 export class UsersRepository {
@@ -29,7 +26,7 @@ export class UsersRepository {
   }
 
   async findById(userId: number): Promise<any> {
-    await this.db.query.users.findFirst({
+    return await this.db.query.users.findFirst({
       where: eq(users.id, userId),
     });
   }
@@ -55,8 +52,14 @@ export class UsersRepository {
     });
   }
 
-  async updateRole(userId: number, entity: UpdateUserRole) {
-    return this.db.update(users).set(entity).where(eq(users.id, userId));
+  async update(userId: number, entity: any) {
+    return this.db
+      .update(users)
+      .set({
+        role: Role[entity],
+      })
+      .where(eq(users.id, userId))
+      .returning();
   }
 
   async deleteOneById(userId: number): Promise<User[]> {

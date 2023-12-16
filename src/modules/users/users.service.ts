@@ -1,5 +1,5 @@
 import { PG_CONNECTION } from '@/common/constants/pg.constants';
-import { RoleType } from '@/common/interface/role.interface';
+import { Role } from '@/common/interface/role.interface';
 import { User, UserCreateInput } from '@/common/interface/user.interface';
 import { users } from '@/database/schema';
 import * as schema from '@/database/schema';
@@ -14,28 +14,25 @@ import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { PaginationDto } from './dtos/pagination.dto';
 import { insertUser, selecttUser } from '@/common/models/crud.model';
 import { BusinessException } from '@/common/exceptions/business.exception';
+import { UsersRepository } from './users.repository';
 
 @Injectable()
 export class UsersService {
   constructor(
     @Inject(PG_CONNECTION) private readonly conn: NodePgDatabase<typeof schema>,
+    private readonly usersRepository: UsersRepository,
   ) {}
   // ----------- Dev service ---------------- //
   async find(searchUserDto: PaginationDto): Promise<User[]> {
     let limit: number = Number(searchUserDto.limit) || 5;
-    const skip: number = Number(searchUserDto.offset - 1) * limit || 0;
+    const skip: number = Number(searchUserDto.offset) || 1;
     if (limit > 10) limit = 10;
-    console.log(limit, skip);
     try {
-      const authUsers: selecttUser[] = await this.conn.query.users.findMany({
-        limit: limit,
-        offset: skip,
-        orderBy: users.createdAt,
-      });
+      const authUsers = await this.usersRepository.find(skip, limit);
       if (!authUsers[0]) throw new BadRequestException('Users list empty');
-      authUsers.map((user) => {
-        delete user.password;
-      });
+      // authUsers.map((user) => {
+      //   delete user.password;
+      // });
       return authUsers;
     } catch (error) {
       throw new BusinessException('Users', error);
@@ -84,18 +81,13 @@ export class UsersService {
   }
 
   // ----------- Private  Services ---------------- //
-  async updateRole(userId: number, updatedRole: string) {
+  async updateRole(userId: number, role: string) {
     try {
-      if (!RoleType[updatedRole]) throw new BadRequestException('INVALID_ROLE');
-      const [updatedUser] = await this.conn
-        .update(users)
-        .set({
-          role: RoleType[updatedRole],
-        })
-        .where(eq(users.id, userId))
-        .returning();
-      if (!updatedUser) throw new NotFoundException(`INVALID_USER_ID`);
-      return updatedUser;
+      console.log(Role[role]);
+      const isUserExists = await this.usersRepository.findById(userId);
+      if (!isUserExists) throw new NotFoundException('User not found');
+      if (!Role[role]) throw new BadRequestException('INVALID_ROLE');
+      return await this.usersRepository.update(userId, Role[role]);
     } catch (error) {
       throw new BusinessException('Users', error);
     }
