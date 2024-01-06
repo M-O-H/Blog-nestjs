@@ -2,7 +2,7 @@ import { PG_CONNECTION } from '@/common/constants/pg.constants';
 import { Inject, Injectable } from '@nestjs/common';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import * as schema from '@/database/schema';
-import { posts } from '@/database/schema';
+import { posts, likes } from '@/database/schema';
 import { and, eq, like } from 'drizzle-orm';
 import {
   Post,
@@ -11,6 +11,7 @@ import {
   PostWithAuthor,
   PostWithComments,
 } from '@/common/interface/post.interface';
+import { LikableType } from '@/common/interface/like.interface';
 
 @Injectable()
 export class PostsRepository {
@@ -18,6 +19,7 @@ export class PostsRepository {
     @Inject(PG_CONNECTION) private readonly db: NodePgDatabase<typeof schema>,
   ) {}
   async create(userId: number, input: PostCreateInput) {
+    console.log(userId);
     return this.db
       .insert(posts)
       .values({ authorId: userId, ...input })
@@ -25,9 +27,10 @@ export class PostsRepository {
       .returning();
   }
 
-  async getById(id: number): Promise<Post | undefined> {
+  async getById(id: number): Promise<any | undefined> {
     return this.db.query.posts.findFirst({
       where: eq(posts.id, id),
+      with: { likes: true },
     });
   }
 
@@ -41,7 +44,7 @@ export class PostsRepository {
         eq(posts.published, true),
         like(posts.title, title || posts.title),
       ),
-      with: { author: true },
+      with: { likes: true },
       limit: limit,
       offset: (page - 1) * limit,
       orderBy: posts.id,
@@ -82,5 +85,33 @@ export class PostsRepository {
     return this.db.query.posts.findMany({
       where: eq(posts.published, false),
     });
+  }
+
+  async createLike(
+    userId: number,
+    likableId: number,
+    likableType: LikableType,
+  ) {
+    return this.db
+      .insert(likes)
+      .values({
+        userId,
+        likableId,
+        likableType,
+      })
+      .onConflictDoNothing()
+      .returning();
+  }
+  async deletRating(userId: number, postId: number): Promise<any | undefined> {
+    return await this.db
+      .delete(likes)
+      .where(and(eq(likes.userId, userId), eq(likes.likableId, postId)))
+      .returning();
+  }
+  async deleteRateByPostId(postId: number) {
+    return await this.db
+      .delete(likes)
+      .where(eq(likes.likableId, postId))
+      .returning();
   }
 }

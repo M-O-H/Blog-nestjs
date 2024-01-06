@@ -16,6 +16,7 @@ export const Role = pgEnum('role', [
   'MANAGE_COMMENTS',
   'USER',
 ]);
+export const LikableType = pgEnum('likableType', ['post', 'comment']);
 
 export const users = pgTable('users', {
   id: serial('id').primaryKey(),
@@ -38,7 +39,6 @@ export const posts = pgTable('posts', {
   content: varchar('content', { length: 250 }).notNull(),
   authorId: integer('author_id').notNull(),
   published: boolean('published').default(false),
-  rate: integer('rate').default(0),
   cover: text('cover').default('../../assets/covers/sdc.png'),
   createdAt: timestamp('createdAt', { mode: 'string' }).defaultNow(),
   updatedAt: timestamp('updatedAt', { mode: 'string' }).defaultNow(),
@@ -51,6 +51,7 @@ export const postsRelations = relations(posts, ({ one, many }) => ({
     references: [users.id],
   }),
   comments: many(comments),
+  likes: many(likes),
 }));
 
 export const comments = pgTable('comments', {
@@ -62,13 +63,38 @@ export const comments = pgTable('comments', {
   updatedAt: timestamp('updatedAt', { mode: 'string' }).defaultNow(),
 });
 
-export const commentsRelations = relations(comments, ({ one }) => ({
+export const commentsRelations = relations(comments, ({ one, many }) => ({
+  author: one(users, {
+    fields: [comments.authorId],
+    references: [users.id],
+  }),
   post: one(posts, {
     fields: [comments.postId],
     references: [posts.id],
   }),
-  author: one(users, {
-    fields: [comments.authorId],
+  likes: many(likes),
+}));
+
+export const likes = pgTable('likes', {
+  id: serial('id').primaryKey(),
+  userId: integer('userId').notNull(),
+  likableId: integer('likableId').notNull(),
+  likableType: LikableType('likableType').notNull(),
+  createdAt: timestamp('createdAt', { mode: 'string' }).defaultNow(),
+  updatedAt: timestamp('updatedAt', { mode: 'string' }).defaultNow(),
+});
+
+export const likesRelations = relations(likes, ({ one }) => ({
+  user: one(users, {
+    fields: [likes.userId],
     references: [users.id],
+  }),
+  post: one(posts, {
+    fields: [likes.likableId],
+    references: [posts.id],
+  }),
+  comments: one(comments, {
+    fields: [likes.likableId],
+    references: [comments.id],
   }),
 }));

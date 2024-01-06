@@ -10,15 +10,14 @@ import {
   Post,
   Query,
   Request,
-  UseGuards,
   UsePipes,
 } from '@nestjs/common';
 import { CreatePostDto } from './dtos/Create-post.dto';
 import { SerachDto } from './dtos/search.dto';
 import { PostService } from './post.service';
-import { CheckUserRole } from '@/common/guards/check-role.gaurd';
 // import { Role, RoleType } from '@/common/interface/role.interface';
 import { UpdatePostDto } from './dtos/update-post.dto';
+import { CreateLikeDto } from './dtos/create-like.dto';
 @UsePipes(ParseIntPipe)
 @Controller('posts')
 export class PostController {
@@ -38,8 +37,6 @@ export class PostController {
 
   @Post('/')
   async createPost(@Request() req, @Body() createPostDto: CreatePostDto) {
-    // const uuid = uuidv4();
-    // return uuid;
     const createdPost = await this.postService.createPost(
       req.user.id,
       createPostDto,
@@ -60,9 +57,9 @@ export class PostController {
   async deletePost(@Request() req, @Param('id') postId: number) {
     return await this.postService.delete(req.user, postId);
   }
-  @UseGuards(new CheckUserRole([]))
-  @Get('/private')
-  async privatePosts() {
-    return await this.postService.private();
+
+  @Post('/likes')
+  async createRating(@Request() req, @Body() createLike: CreateLikeDto) {
+    return await this.postService.createLike(req.user.id, createLike);
   }
 }

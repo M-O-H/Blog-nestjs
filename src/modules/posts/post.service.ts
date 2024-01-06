@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
   NotFoundException,
@@ -12,13 +13,15 @@ import { UpdatePostDto } from './dtos/update-post.dto';
 import { CreatePostDto } from './dtos/Create-post.dto';
 import { User } from '@/common/interface/user.interface';
 import { Role } from '@/common/interface/role.interface';
+import { CreateLikeDto } from './dtos/create-like.dto';
+import { LikableType } from '@/common/interface/like.interface';
 @Injectable()
 export class PostService {
   constructor(private readonly postsRepository: PostsRepository) {}
   async getPublicPosts(search: SerachDto) {
     let limit: number = Number(search.limit) || 10;
     const page: number = Number(search.page) || 1;
-    const title = search.title ? `%${search.title}%` : null;
+    const title = search?.title ? `%${search.title}%` : null;
     if (limit > 10) limit = 10;
     try {
       const publishedPosts: selectPost[] =
@@ -26,9 +29,9 @@ export class PostService {
       if (isEmpty(publishedPosts[0]))
         throw new NotFoundException('Post not found');
       // TODO: remove author's password on data query
-      publishedPosts.map((post: any) => {
-        delete post.author.password;
-      });
+      // publishedPosts.map((post: any) => {
+      //   delete post.author.password;
+      // });
       return publishedPosts;
     } catch (error) {
       throw new BusinessException('Posts', error);
@@ -94,7 +97,37 @@ export class PostService {
       throw new BusinessException('Posts', error, postId);
     }
   }
-  async private() {
-    return await this.postsRepository.getPrivatePosts();
+
+  async createLike(userId: number, createLike: CreateLikeDto) {
+    if (!createLike.likableType.includes('post'))
+      throw new BadRequestException('invalid type');
+
+    const postId = createLike.likableId;
+
+    const post = await this.postsRepository.getById(postId);
+    if (!post) throw new NotFoundException('Post not found');
+
+    const hasLike = post.likes.some((like) => like.userId === userId);
+
+    if (hasLike) {
+      const deletedRating = await this.postsRepository.deletRating(
+        userId,
+        postId,
+      );
+      return {
+        message: 'like removed',
+        deletedRating,
+      };
+    }
+
+    const createdLike = await this.postsRepository.createLike(
+      userId,
+      postId,
+      LikableType['Post'],
+    );
+    return {
+      message: 'like created',
+      createdLike,
+    };
   }
 }

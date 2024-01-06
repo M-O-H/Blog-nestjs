@@ -27,6 +27,12 @@ export class CommentsRepository {
     });
   }
 
+  async getCommentWithLikes(id: number): Promise<CommentWitRelation | any> {
+    return await this.db.query.comments.findFirst({
+      where: eq(comments.id, id),
+      with: { author: true, likes: true },
+    });
+  }
   async find(page: number, limit: number): Promise<CommentWitRelation[] | any> {
     return this.db.query.comments.findMany({
       // with: { author: true },

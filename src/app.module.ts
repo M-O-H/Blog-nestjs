@@ -7,6 +7,7 @@ import { AuthModule } from './authentication/auth.module';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { CommentsModule } from './modules/comments/comments.module';
+import { LikeModule } from './modules/like/like.module';
 
 @Module({
   imports: [
@@ -15,10 +16,12 @@ import { CommentsModule } from './modules/comments/comments.module';
     CommentsModule,
     DrizzleModule,
     AuthModule,
+    LikeModule,
     ConfigModule.forRoot({
       envFilePath: '.development.env',
       isGlobal: true,
     }),
+    LikeModule,
   ],
   controllers: [],
   providers: [
