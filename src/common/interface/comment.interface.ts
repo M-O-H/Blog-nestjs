@@ -7,6 +7,7 @@ import {
 export interface Comment extends selectComments {}
 
 export interface CommentCreateInput extends Omit<insertComments, 'id'> {}
+
 export interface UpdateComment
   extends Partial<Omit<CommentCreateInput, 'postId'>> {}
 

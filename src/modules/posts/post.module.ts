@@ -19,4 +19,4 @@ import { ConfigService } from '@nestjs/config';
   providers: [PostService, PostsRepository],
   controllers: [PostController],
 })
-export class PostsModule {}
+export class PostsModule { }

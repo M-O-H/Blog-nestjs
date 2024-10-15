@@ -3,7 +3,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import * as schema from '@/database/schema';
 import { posts, likes } from '@/database/schema';
-import { and, eq, like } from 'drizzle-orm';
+import { and, asc, eq, ilike } from 'drizzle-orm';
 import {
   Post,
   PostCreateInput,
@@ -19,7 +19,6 @@ export class PostsRepository {
     @Inject(PG_CONNECTION) private readonly db: NodePgDatabase<typeof schema>,
   ) {}
   async create(userId: number, input: PostCreateInput) {
-    console.log(userId);
     return this.db
       .insert(posts)
       .values({ authorId: userId, ...input })
@@ -30,7 +29,15 @@ export class PostsRepository {
   async getById(id: number): Promise<any | undefined> {
     return this.db.query.posts.findFirst({
       where: eq(posts.id, id),
-      with: { likes: true },
+      with: { likes: true, comments: true },
+    });
+  }
+
+  async getRecent(): Promise<any | undefined> {
+    return this.db.query.posts.findMany({
+      where: eq(posts.published, true),
+      orderBy: [asc(posts.id)],
+      with: { author: true },
     });
   }
 
@@ -42,9 +49,9 @@ export class PostsRepository {
     return this.db.query.posts.findMany({
       where: and(
         eq(posts.published, true),
-        like(posts.title, title || posts.title),
+        ilike(posts.title, title || posts.title),
       ),
-      with: { likes: true },
+      with: { likes: true, author: true, comments: true },
       limit: limit,
       offset: (page - 1) * limit,
       orderBy: posts.id,

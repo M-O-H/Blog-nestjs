@@ -13,23 +13,27 @@ import {
   UsePipes,
 } from '@nestjs/common';
 import { CreatePostDto } from './dtos/Create-post.dto';
-import { SerachDto } from './dtos/search.dto';
+import { SearchDto } from './dtos/search.dto';
 import { PostService } from './post.service';
 // import { Role, RoleType } from '@/common/interface/role.interface';
 import { UpdatePostDto } from './dtos/update-post.dto';
 import { CreateLikeDto } from './dtos/create-like.dto';
+import { ApiBody } from '@nestjs/swagger';
+
 @UsePipes(ParseIntPipe)
 @Controller('posts')
 export class PostController {
-  constructor(private readonly postService: PostService) {}
+  constructor(private readonly postService: PostService) { }
   // ----------- Dev Routes ---------------- //
   @IsPublic()
+  @ApiBody({ type: SearchDto })
   @Get('/')
-  async getPublishedPost(@Query() searchDto: SerachDto) {
+  async getPublishedPost(@Request req, @Query() searchDto: SearchDto) {
     return await this.postService.getPublicPosts(searchDto);
   }
 
   // ----------- Private Routes ---------------- //
+  @IsPublic()
   @Get('search/:id')
   async getPost(@Param('id') postId: number) {
     return await this.postService.getPost(postId);
@@ -37,6 +41,7 @@ export class PostController {
 
   @Post('/')
   async createPost(@Request() req, @Body() createPostDto: CreatePostDto) {
+    console.log(createPostDto);
     const createdPost = await this.postService.createPost(
       req.user.id,
       createPostDto,

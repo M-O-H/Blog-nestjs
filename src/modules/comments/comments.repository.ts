@@ -35,7 +35,7 @@ export class CommentsRepository {
   }
   async find(page: number, limit: number): Promise<CommentWitRelation[] | any> {
     return this.db.query.comments.findMany({
-      // with: { author: true },
+      with: { author: true },
       limit: limit,
       offset: (page - 1) * limit,
     });
@@ -43,12 +43,12 @@ export class CommentsRepository {
 
   async findByPostId(
     id: number,
-    page: number,
-    limit: number,
+    page: number = 1,
+    limit: number = 0,
   ): Promise<CommentWitRelation[]> {
     return this.db.query.comments.findMany({
       where: eq(comments.postId, id),
-      with: { author: true },
+      with: { author: true, likes: true },
       limit: limit,
       offset: (page - 1) * limit,
     });

@@ -1,9 +1,9 @@
 import { IsNumber, IsOptional, IsPositive, IsString } from 'class-validator';
 
-export class SerachDto {
+export class SearchDto {
   @IsString()
   @IsOptional()
-  title: string;
+  query: string;
 
   @IsString()
   @IsOptional()

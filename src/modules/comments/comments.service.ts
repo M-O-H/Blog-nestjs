@@ -21,7 +21,7 @@ export class CommentsService {
   constructor(
     private readonly CommentRepository: CommentsRepository,
     private readonly postsRepository: PostsRepository,
-  ) {}
+  ) { }
 
   async create(userId: number, data: CreateCommentDto) {
     try {
@@ -56,6 +56,9 @@ export class CommentsService {
         await this.CommentRepository.findByPostId(query.postId, page, limit);
       if (!userComment[0])
         throw new NotFoundException('No comments found on post');
+      userComment.map((user) => {
+        delete user.author.password; // TODO add types
+      });
       return userComment;
     } catch (error) {
       throw new BusinessException('Comments', error, query?.postId);

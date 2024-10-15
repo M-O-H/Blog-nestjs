@@ -4,7 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { SerachDto } from './dtos/search.dto';
+import { SearchDto } from './dtos/search.dto';
 import { isEmpty } from 'class-validator';
 import { insertPost, selectPost } from '@/common/models/crud.model';
 import { BusinessException } from '@/common/exceptions/business.exception';
@@ -18,14 +18,15 @@ import { LikableType } from '@/common/interface/like.interface';
 @Injectable()
 export class PostService {
   constructor(private readonly postsRepository: PostsRepository) {}
-  async getPublicPosts(search: SerachDto) {
+
+  async getPublicPosts(search: SearchDto) {
     let limit: number = Number(search.limit) || 10;
     const page: number = Number(search.page) || 1;
-    const title = search?.title ? `%${search.title}%` : null;
+    const query = search?.query ? `%${search.query}%` : '';
     if (limit > 10) limit = 10;
     try {
       const publishedPosts: selectPost[] =
-        await this.postsRepository.findPublic(page, limit, title);
+        await this.postsRepository.findPublic(page, limit, query);
       if (isEmpty(publishedPosts[0]))
         throw new NotFoundException('Post not found');
       // TODO: remove author's password on data query
@@ -47,6 +48,7 @@ export class PostService {
       throw new BusinessException('Posts', error, postId);
     }
   }
+
   // not found - post with title exist -
   async createPost(userId: number, createPost: CreatePostDto) {
     try {

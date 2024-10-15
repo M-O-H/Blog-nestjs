@@ -13,12 +13,11 @@ import { UsersService } from './users.service';
 
 @Controller('users')
 export class UsersController {
-  constructor(private readonly userService: UsersService) {}
+  constructor(private readonly userService: UsersService) { }
 
   // ----------- Public Routes ---------------- //
-  @Get('profile/@me')
+  @Get('profile')
   async profile(@Request() req) {
-    console.log(req.user);
     return await this.userService.findById(req.user.id);
   }
 

@@ -36,7 +36,7 @@ export const usersRelations = relations(users, ({ many }) => ({
 export const posts = pgTable('posts', {
   id: serial('id').primaryKey(),
   title: varchar('title', { length: 70 }).notNull(),
-  content: varchar('content', { length: 250 }).notNull(),
+  content: varchar('content').notNull(),
   authorId: integer('author_id').notNull(),
   published: boolean('published').default(false),
   cover: text('cover').default('../../assets/covers/sdc.png'),
