@@ -17,10 +17,10 @@ import { CreateLikeDto } from './dtos/create-like.dto';
 import { LikableType } from '@/common/interface/like.interface';
 @Injectable()
 export class PostService {
-  constructor(private readonly postsRepository: PostsRepository) {}
+  constructor(private readonly postsRepository: PostsRepository) { }
 
   async getPublicPosts(search: SearchDto) {
-    let limit: number = Number(search.limit) || 10;
+    let limit: number = Number(search.limit) || 8;
     const page: number = Number(search.page) || 1;
     const query = search?.query ? `%${search.query}%` : '';
     if (limit > 10) limit = 10;

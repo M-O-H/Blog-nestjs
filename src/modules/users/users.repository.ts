@@ -11,7 +11,7 @@ import { Role } from '@/common/interface/role.interface';
 export class UsersRepository {
   constructor(
     @Inject(PG_CONNECTION) private readonly db: NodePgDatabase<typeof schema>,
-  ) {}
+  ) { }
 
   async create(user: UserCreateInput) {
     return this.db.insert(users).values(user).onConflictDoNothing().returning();
@@ -28,6 +28,7 @@ export class UsersRepository {
   async findById(userId: number): Promise<any> {
     return await this.db.query.users.findFirst({
       where: eq(users.id, userId),
+      with: { posts: true },
     });
   }
 
@@ -43,6 +44,7 @@ export class UsersRepository {
   async findOneByUsername(username: string): Promise<User> {
     return this.db.query.users.findFirst({
       where: like(users.username, `%${username}%`),
+      with: { posts: true },
     });
   }
 

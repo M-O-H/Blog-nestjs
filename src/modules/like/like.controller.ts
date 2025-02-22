@@ -4,7 +4,7 @@ import { CreateLikeDto } from './dto/create-like.dto';
 
 @Controller('like')
 export class LikeController {
-  constructor(private readonly likeService: LikeService) {}
+  constructor(private readonly likeService: LikeService) { }
   @Post('post/:postId')
   async likePost(
     @Request() req,

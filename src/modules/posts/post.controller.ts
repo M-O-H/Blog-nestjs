@@ -15,7 +15,6 @@ import {
 import { CreatePostDto } from './dtos/Create-post.dto';
 import { SearchDto } from './dtos/search.dto';
 import { PostService } from './post.service';
-// import { Role, RoleType } from '@/common/interface/role.interface';
 import { UpdatePostDto } from './dtos/update-post.dto';
 import { CreateLikeDto } from './dtos/create-like.dto';
 import { ApiBody } from '@nestjs/swagger';
@@ -28,7 +27,7 @@ export class PostController {
   @IsPublic()
   @ApiBody({ type: SearchDto })
   @Get('/')
-  async getPublishedPost(@Request req, @Query() searchDto: SearchDto) {
+  async getPublishedPost(@Request() req, @Query() searchDto: SearchDto) {
     return await this.postService.getPublicPosts(searchDto);
   }
 

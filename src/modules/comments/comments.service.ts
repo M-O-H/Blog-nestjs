@@ -9,7 +9,7 @@ import { CreateCommentDto } from './dto/create-comment.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
 import { User } from '@/common/interface/user.interface';
 import { QueryDto } from './dto/query.dto';
-import { insertComments, selectComments } from '@/common/models/crud.model';
+import { insertComments, selectComments, selectCommentWithAuthor } from '@/common/models/crud.model';
 import { BusinessException } from '@/common/exceptions/business.exception';
 import { Role } from '@/common/interface/role.interface';
 import { CommentsRepository } from './comments.repository';
@@ -52,13 +52,10 @@ export class CommentsService {
         if (user && user.role != Role.ADMIN) return []; // findUserComment
         return this.CommentRepository.find(page, limit);
       }
-      const userComment: selectComments[] =
+      const userComment: selectCommentWithAuthor[] =
         await this.CommentRepository.findByPostId(query.postId, page, limit);
       if (!userComment[0])
         throw new NotFoundException('No comments found on post');
-      userComment.map((user) => {
-        delete user.author.password; // TODO add types
-      });
       return userComment;
     } catch (error) {
       throw new BusinessException('Comments', error, query?.postId);

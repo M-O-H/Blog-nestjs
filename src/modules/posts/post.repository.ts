@@ -17,7 +17,7 @@ import { LikableType } from '@/common/interface/like.interface';
 export class PostsRepository {
   constructor(
     @Inject(PG_CONNECTION) private readonly db: NodePgDatabase<typeof schema>,
-  ) {}
+  ) { }
   async create(userId: number, input: PostCreateInput) {
     return this.db
       .insert(posts)

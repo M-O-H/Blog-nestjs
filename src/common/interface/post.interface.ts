@@ -3,7 +3,6 @@ import {
   insertPost,
   insertUser,
   selectComments,
-  selectRating,
 } from '../models/crud.model';
 
 export interface Post extends selectPost {}

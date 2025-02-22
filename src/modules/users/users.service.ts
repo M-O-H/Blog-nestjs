@@ -21,14 +21,14 @@ export class UsersService {
   constructor(
     @Inject(PG_CONNECTION) private readonly conn: NodePgDatabase<typeof schema>,
     private readonly usersRepository: UsersRepository,
-  ) { }
+  ) {}
   // ----------- Dev service ---------------- //
-  async find(searchUserDto: PaginationDto): Promise<User[]> {
+  async find(searchUserDto: PaginationDto): Promise<Omit<selecttUser, 'password'>[]> {
     let limit: number = Number(searchUserDto.limit) || 5;
     const skip: number = Number(searchUserDto.offset) || 1;
     if (limit > 10) limit = 10;
     try {
-      const authUsers = await this.usersRepository.find(skip, limit);
+      const authUsers = await this.usersRepository.find(skip, limit) as selecttUser[];
       if (!authUsers[0]) throw new BadRequestException('Users list empty');
       authUsers.map((user) => {
         delete user.password;
@@ -100,6 +100,7 @@ export class UsersService {
         where: eq(users.id, userId),
         with: {
           comments: true,
+          posts: true,
         },
       });
       if (!user) throw new NotFoundException(`user not found`);
