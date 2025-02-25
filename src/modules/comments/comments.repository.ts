@@ -15,7 +15,7 @@ import { UpdateCommentDto } from './dto/update-comment.dto';
 export class CommentsRepository {
   constructor(
     @Inject(PG_CONNECTION) private readonly db: NodePgDatabase<typeof schema>,
-  ) {}
+  ) { }
   async create(input: CommentCreateInput) {
     return this.db.insert(comments).values(input).returning();
   }

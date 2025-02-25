@@ -2,10 +2,10 @@ import { PG_CONNECTION } from '@/common/constants/pg.constants';
 import { Injectable, Inject } from '@nestjs/common';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import * as schema from '@/database/schema';
-import { users } from '@/database/schema';
+import { users, Role } from '@/database/schema';
 import { eq, like, or } from 'drizzle-orm';
 import { User, UserCreateInput } from '@/common/interface/user.interface';
-import { Role } from '@/common/interface/role.interface';
+import { Role as RoleInterface } from '@/common/interface/role.interface';
 
 @Injectable()
 export class UsersRepository {
@@ -58,7 +58,7 @@ export class UsersRepository {
     return this.db
       .update(users)
       .set({
-        role: Role[entity],
+        [users.role.name]: Role[entity],
       })
       .where(eq(users.id, userId))
       .returning();

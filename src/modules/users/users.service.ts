@@ -111,9 +111,9 @@ export class UsersService {
     }
   }
 
-  async create(userDto: UserCreateInput): Promise<User> {
+  async create(userDto: UserCreateInput): Promise<selecttUser> {
     try {
-      const [CreatedUser]: insertUser[] = await this.conn
+      const [CreatedUser]: selecttUser[] = await this.conn
         .insert(users)
         .values(userDto)
         .onConflictDoNothing()

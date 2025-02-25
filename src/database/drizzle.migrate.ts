@@ -1,11 +1,14 @@
+import { ConfigService } from '@nestjs/config';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { migrate } from 'drizzle-orm/node-postgres/migrator';
 import { Pool } from 'pg';
 
+const configService = new ConfigService();
+
 const pool = new Pool({
-  connectionString:
-    'postgres://postgres:postgres@localhost:5432/blogpost?sllmode=false',
+  connectionString: configService.get<string>('DATABASE_URL'),
 });
+
 const db = drizzle(pool);
 
 const migration = async () => {

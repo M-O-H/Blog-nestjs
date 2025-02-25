@@ -1,7 +1,7 @@
-import { insertUser } from '../models/crud.model';
+import { BaseUser, UserResponse, insertUser } from '../models/crud.model';
 
-export interface User extends Omit<insertUser, 'password'> {}
+export type User = UserResponse;  // Use the response type directly
 
 export interface UserCreateInput extends insertUser {}
 
-export interface UpdateUserRole extends Pick<User, 'role'> {}
+export interface UpdateUserRole extends Pick<BaseUser, 'role'> {}
