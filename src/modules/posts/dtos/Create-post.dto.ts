@@ -6,7 +6,8 @@ export class CreatePostDto {
     description: 'Title of post',
     type: String,
     required: true,
-    minimum: 70,
+    minLength: 70,
+    example: "The Arch"
   })
   @IsString()
   title: string;
@@ -15,7 +16,7 @@ export class CreatePostDto {
     description: 'Content of post',
     type: String,
     required: true,
-    minimum: 250,
+    minLength: 250,
   })
   @IsString()
   content: string;
@@ -28,7 +29,7 @@ export class CreatePostDto {
   })
   @IsBoolean()
   @IsOptional()
-  published: boolean;
+  published: boolean = false;
 
   @ApiProperty({
     description: 'Post cover',
@@ -38,7 +39,7 @@ export class CreatePostDto {
   })
   @IsString()
   @IsOptional()
-  cover: string;
+  cover: string = '../../assets/covers/sdc.png';
 
   @ApiProperty({
     description: 'Post Tags',
@@ -47,12 +48,12 @@ export class CreatePostDto {
   })
   @IsOptional()
   @IsString({ each: true })
-  tags: string;
-  // TODO: fix tage type to string[] + property
+  tags?: string[];
 
   @ApiProperty({
     description: 'Post creation date',
     type: String,
+    format: 'date-time',
     required: false,
   })
   @IsOptional()
@@ -60,8 +61,9 @@ export class CreatePostDto {
   createdAt?: string;
 
   @ApiProperty({
-    description: 'Post udpate date',
+    description: 'Post update date',
     type: String,
+    format: 'date-time',
     required: false,
   })
   @IsOptional()

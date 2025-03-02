@@ -18,7 +18,7 @@ import { LikeModule } from './modules/like/like.module';
     AuthModule,
     LikeModule,
     ConfigModule.forRoot({
-      envFilePath: '.production.env',
+      envFilePath: '.development.env',
       isGlobal: true,
     }),
     LikeModule,

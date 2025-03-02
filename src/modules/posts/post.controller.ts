@@ -17,15 +17,19 @@ import { SearchDto } from './dtos/search.dto';
 import { PostService } from './post.service';
 import { UpdatePostDto } from './dtos/update-post.dto';
 import { CreateLikeDto } from './dtos/create-like.dto';
-import { ApiBody } from '@nestjs/swagger';
+import { ApiBody, ApiCreatedResponse, ApiNotFoundResponse, ApiOperation, ApiResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 
 @UsePipes(ParseIntPipe)
+@ApiTags('posts')
 @Controller('posts')
 export class PostController {
   constructor(private readonly postService: PostService) { }
+
   // ----------- Dev Routes ---------------- //
   @IsPublic()
-  @ApiBody({ type: SearchDto })
+  @ApiOperation({ summary: 'Get a list of published posts with pagination' })
+  @ApiResponse({ status: 200, description: 'List of published posts' })
+  @ApiNotFoundResponse({ description: 'No published posts found.' })
   @Get('/')
   async getPublishedPost(@Request() req, @Query() searchDto: SearchDto) {
     return await this.postService.getPublicPosts(searchDto);
@@ -33,14 +37,21 @@ export class PostController {
 
   // ----------- Private Routes ---------------- //
   @IsPublic()
+  @ApiOperation({ summary: 'Get a post by ID' })
+  @ApiResponse({ status: 200, description: 'Post details' })
+  @ApiNotFoundResponse({ description: 'Post not found.' })
   @Get('search/:id')
   async getPost(@Param('id') postId: number) {
     return await this.postService.getPost(postId);
   }
 
   @Post('/')
+  @ApiOperation({ summary: 'Create a new post' })
+  @ApiBody({ description: 'Post data', type: CreatePostDto })
+  @ApiResponse({ status: 201, description: 'Post created successfully.' })
+  @ApiCreatedResponse({ description: 'Post created successfully.' })
+  @ApiUnauthorizedResponse({ description: "Unauthorized" })
   async createPost(@Request() req, @Body() createPostDto: CreatePostDto) {
-    console.log(createPostDto);
     const createdPost = await this.postService.createPost(
       req.user.id,
       createPostDto,
@@ -49,6 +60,10 @@ export class PostController {
   }
 
   @Patch(':id')
+  @ApiOperation({ summary: 'Update an existing post' })
+  @ApiBody({ description: 'Updated post data', type: UpdatePostDto })
+  @ApiResponse({ status: 200, description: 'Post updated successfully.' })
+  @ApiNotFoundResponse({ description: 'Post not found.' })
   async updatePost(
     @Request() req,
     @Param('id') postId: number,
@@ -58,11 +73,19 @@ export class PostController {
   }
 
   @Delete(':id')
+  @ApiOperation({ summary: 'Delete a post' })
+  @ApiResponse({ status: 200, description: 'Post deleted successfully.' })
+  @ApiNotFoundResponse({ description: 'Post not found.' })
   async deletePost(@Request() req, @Param('id') postId: number) {
     return await this.postService.delete(req.user, postId);
   }
 
   @Post('/likes')
+  @ApiOperation({ summary: 'Like a post' })
+  @ApiBody({ description: 'Like data', type: CreateLikeDto })
+  @ApiResponse({ status: 201, description: 'Like created successfully.' })
+  @ApiCreatedResponse({ description: 'Like created successfully.' })
+  @ApiNotFoundResponse({ description: 'Post not found.' })
   async createRating(@Request() req, @Body() createLike: CreateLikeDto) {
     return await this.postService.createLike(req.user.id, createLike);
   }
