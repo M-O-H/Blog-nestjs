@@ -5,7 +5,7 @@ import { PostsRepository } from '../posts/post.repository';
 
 @Injectable()
 export class UploadService {
-  constructor(private readonly postRepository: PostsRepository) {}
+  constructor(private readonly postRepository: PostsRepository) { }
   async findAll() {
     const files = await fs.promises.readFile(
       'uploads/',

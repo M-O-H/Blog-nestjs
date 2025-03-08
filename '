@@ -14,14 +14,12 @@ import { megaToByte } from '@/common/utility/sizeConvertor';
 import { ParseFiles } from '@/common/pipes/parse-file.pipe';
 import { ParseIntPipe } from '@/common/pipes/parse-int.pipe';
 import { ApiBody, ApiCreatedResponse, ApiNotFoundResponse, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { CreateUploadDto } from './dto/create-upload.dto';
 
-@ApiTags('Upload')
 @UsePipes(ParseIntPipe)
 @Controller('upload')
+@ApiTags('Upload')
 export class UploadController {
   constructor(private readonly uploadService: UploadService) { }
-
   @UseInterceptors(
     FileInterceptor('cover', {
       storage: postStorage(),
@@ -31,10 +29,10 @@ export class UploadController {
     }),
   )
   @ApiOperation({ summary: 'Upload file' })
-  @ApiBody({ description: 'Like data', type: CreateUploadDto })
+  @ApiBody({ description: 'Like data', type: ParseFiles })
   @ApiResponse({ status: 201, description: 'File uploaded successfully.' })
   @ApiCreatedResponse({ description: 'Like uploaded successfully.' })
-  @ApiNotFoundResponse({ description: 'File upload failed ' })
+  @ApiNotFoundResponse({ description: 'File failed to upload.' })
   @Post('post/:id')
   async upload(
     @Param('id') postId: number,

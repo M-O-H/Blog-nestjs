@@ -72,14 +72,6 @@ export class PostController {
     return await this.postService.update(req.user, postId, updatePostDto);
   }
 
-  @Delete(':id')
-  @ApiOperation({ summary: 'Delete a post' })
-  @ApiResponse({ status: 200, description: 'Post deleted successfully.' })
-  @ApiNotFoundResponse({ description: 'Post not found.' })
-  async deletePost(@Request() req, @Param('id') postId: number) {
-    return await this.postService.delete(req.user, postId);
-  }
-
   @Post('/likes')
   @ApiOperation({ summary: 'Like a post' })
   @ApiBody({ description: 'Like data', type: CreateLikeDto })
@@ -88,5 +80,13 @@ export class PostController {
   @ApiNotFoundResponse({ description: 'Post not found.' })
   async createRating(@Request() req, @Body() createLike: CreateLikeDto) {
     return await this.postService.createLike(req.user.id, createLike);
+  }
+
+  @Delete(':id')
+  @ApiOperation({ summary: 'Delete a post' })
+  @ApiResponse({ status: 200, description: 'Post deleted successfully.' })
+  @ApiNotFoundResponse({ description: 'Post not found.' })
+  async deletePost(@Request() req, @Param('id') postId: number) {
+    return await this.postService.delete(req.user, postId);
   }
 }
