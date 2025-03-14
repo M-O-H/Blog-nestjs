@@ -1,21 +1,18 @@
-# BlogPost Website
-
-![GitHub license](https://img.shields.io/github/license/M-O-H/Blog-nestjs)
+![Cover Image](./images/Banner.png)
 ![Node.js](https://img.shields.io/badge/node-%3E%3D16-brightgreen)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-%3E%3D13-blue)
 ![NestJS](https://img.shields.io/badge/NestJS-%E2%9C%94-red)
 ![Drizzle ORM](https://img.shields.io/badge/Drizzle%20ORM-%E2%9C%94-brightgreen)
-![Build](https://img.shields.io/github/actions/workflow/status/M-O-H/Blog-nestjs/ci.yml)
-![Tests](https://img.shields.io/github/actions/workflow/status/M-O-H/Blog-nestjs/test.yml?label=tests)
-![Coverage](https://img.shields.io/codecov/c/github/M-O-H/Blog-nestjs)
 
 ## Description
-BogPost is a modern blog website built with **NestJS**, **Drizzle ORM**, and **PostgreSQL**. This project provides a fully functional backend API for managing blog posts, authors, and comments, utilizing a robust and scalable architecture.
+BogPost is a modern blog API built with **NestJS**, **Drizzle ORM**, and **PostgreSQL**. This project provides a fully functional backend API for managing blog posts, authors, and comments, utilizing a robust and scalable architecture.
+
+## Table of Contents
 
 ## Table of Contents
 
 - [Features](#features)
-- [Tech Stack](#tech-stack)
+- [Technologies](#technologies)
 - [Installation](#installation)
 - [Configuration](#configuration)
 - [Database Setup](#database-setup)
@@ -23,7 +20,6 @@ BogPost is a modern blog website built with **NestJS**, **Drizzle ORM**, and **P
 - [API Documentation](#api-documentation)
 - [Image Upload](#image-upload)
 - [Contributing](#contributing)
-- [License](#license)
 
 ## Features
 
@@ -34,12 +30,13 @@ BogPost is a modern blog website built with **NestJS**, **Drizzle ORM**, and **P
 - TypeScript support for type safety
 - Environment-based configuration
 - API validation using class-validator
-- Auto-generated API documentation using Swagger
+- API documentation using Swagger
 - Image upload with file type validation
-- CI/CD with GitHub Actions
-- Test coverage reports using Codecov
+- Rate limiting
+- Role-Based Access Control (RBAC) 
+- The API versioning
 
-## Tech Stack
+## Technologies
 
 - **Backend:** NestJS (Express or Fastify adapter)
 - **Database:** PostgreSQL
@@ -83,7 +80,7 @@ JWT_SECRET=your_secret_key
 UPLOADS_PATH=uploads/
 ```
 
-## Database Setup
+## Database setup
 
 ### Run Migrations
 
@@ -103,18 +100,6 @@ npm run migrate:generate
 npm run migrate:push
 ```
 
-### Seed Database (Optional)
-
-```sh
-npm run seed
-```
-
-Add the following migration scripts to `package.json`:
-
-```json
-"migrate:generate": "npx drizzle-kit generate:pg --schema=./src/database/schema.ts",
-"migrate:push": "node -r esbuild-register src/database/drizzle.migrate.ts"
-```
 
 ## Running the Project
 
@@ -145,6 +130,11 @@ This project uses **Swagger** for API documentation. Once the server is running,
 http://localhost:3000/api
 ```
 
+
+Here’s an example of the API documentation page:Here’s an example of the API documentation page:
+
+![API Docs](./images/API_DOCS.png)
+
 ## Image Upload
 
 The project supports image uploads using **Multer**. To enable this feature, ensure the uploads directory is configured properly.
@@ -156,6 +146,11 @@ The project supports image uploads using **Multer**. To enable this feature, ens
   - **Accepted Formats:** JPG, PNG, GIF
   - **Max Size:** 5MB
 
+
+### BloggerUI
+
+![BloggerUI](https://github.com/M-O-H/BloggerUI) is the frontend interface designed to work seamlessly with the Blost-Nest API. It provides an intuitive and user-friendly experience for bloggers to manage their posts.
+
 ## Contributing
 
 Contributions are welcome! Please follow these steps:
@@ -164,8 +159,3 @@ Contributions are welcome! Please follow these steps:
 2. Create a new branch (`feature/new-feature` or `bugfix/fix-issue`).
 3. Commit your changes with clear messages.
 4. Push your branch and create a pull request.
-
-## License
-
-This project is licensed under the [MIT License](LICENSE).
-
