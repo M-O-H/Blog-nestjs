@@ -1,4 +1,7 @@
-![Cover Image](./images/Banner.png)
+<p align="center">
+  <img src="./images/Banner.png" width="600" alt="Nest Logo" />
+</p>
+
 ![Node.js](https://img.shields.io/badge/node-%3E%3D16-brightgreen)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-%3E%3D13-blue)
 ![NestJS](https://img.shields.io/badge/NestJS-%E2%9C%94-red)
@@ -6,8 +9,6 @@
 
 ## Description
 BogPost is a modern blog API built with **NestJS**, **Drizzle ORM**, and **PostgreSQL**. This project provides a fully functional backend API for managing blog posts, authors, and comments, utilizing a robust and scalable architecture.
-
-## Table of Contents
 
 ## Table of Contents
 
@@ -131,7 +132,7 @@ http://localhost:3000/api
 ```
 
 
-Here’s an example of the API documentation page:Here’s an example of the API documentation page:
+Here’s an example of the API documentation page:
 
 ![API Docs](./images/API_DOCS.png)
 
