@@ -91,13 +91,13 @@ npm run migrate
 ### Generate Migrations
 
 ```sh
-npm run migrate:generate
+npm run generate
 ```
 
 ### Push Migrations
 
 ```sh
-npm run migrate:push
+npm run push
 ```
 
 

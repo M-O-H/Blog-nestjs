@@ -21,4 +21,4 @@ import { Pool } from 'pg';
   ],
   exports: [PG_CONNECTION],
 })
-export class DrizzleModule {}
+export class DrizzleModule { }

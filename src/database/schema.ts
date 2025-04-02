@@ -21,10 +21,10 @@ export const LikableType = pgEnum('likableType', ['post', 'comment']);
 export const users = pgTable('users', {
   id: serial('id').primaryKey(),
   username: varchar('username', { length: 50 }).unique().notNull(),
-  email: varchar('email', { length: 255 }).unique().notNull(),
+  email: varchar('email', { length: 259 }).unique().notNull(),
   bio: text('text').default(''),
   password: text('password').notNull(),
-  role: Role('role').default('USER'),
+  role: Role().default('USER'),
   createdAt: timestamp('createdAt', { mode: 'string' }).defaultNow(),
   updatedAt: timestamp('updatedAt', { mode: 'string' }).defaultNow(),
 });
@@ -80,7 +80,7 @@ export const likes = pgTable('likes', {
   id: serial('id').primaryKey(),
   userId: integer('userId').notNull(),
   likableId: integer('likableId').notNull(),
-  likableType: LikableType('likableType').notNull(),
+  likableType: LikableType().notNull(),
   createdAt: timestamp('createdAt', { mode: 'string' }).defaultNow(),
   updatedAt: timestamp('updatedAt', { mode: 'string' }).defaultNow(),
 });
